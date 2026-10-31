@@ -1,11 +1,11 @@
 // Vulcatic service worker: keeps the app usable with weak or no signal.
 // - Pages: always from the network; with no signal, show the offline shop finder.
-// - CSS/JS/images: served from the phone, refreshed in the background.
+// - CSS/JS/images: saved per version; a new version is downloaded right away.
 // - Map tiles: the ones you've already looked at are kept (OpenStreetMap does not
 //   allow bulk-downloading tiles, so we never pre-fetch them).
 // Bump VERSION whenever offline.html or the precache list changes.
 
-const VERSION = 'v1';
+const VERSION = 'v2';
 const STATIC = `vulcatic-static-${VERSION}`;
 const TILES = 'vulcatic-tiles';
 const MAX_TILES = 1500;
@@ -57,16 +57,27 @@ self.addEventListener('fetch', (event) => {
     return;
   }
 
-  // App files: stale-while-revalidate (the ?v= version suffix is ignored for matching).
+  // App files. Pages ask for them with a ?v=<file time> suffix, so:
+  // - same version already saved -> use it (instant, works offline)
+  // - new version -> download it now (never show old styles after an update)
+  // - no signal -> fall back to whatever version was saved last
   if (url.pathname.includes('/assets/') || url.pathname.endsWith('manifest.webmanifest')) {
     event.respondWith((async () => {
       const cache = await caches.open(STATIC);
-      const hit = await cache.match(req, { ignoreSearch: true });
-      const fresh = fetch(req).then((res) => {
-        if (res.ok) cache.put(new Request(url.origin + url.pathname), res.clone());
+      if (url.search) {
+        const exact = await cache.match(req);
+        if (exact) return exact;
+      }
+      try {
+        const res = await fetch(req);
+        if (res.ok) {
+          await cache.put(req, res.clone());
+          if (url.search) trimOldVersions(cache, url);
+        }
         return res;
-      }).catch(() => hit);
-      return hit || fresh;
+      } catch (e) {
+        return (await cache.match(req, { ignoreSearch: true })) || Response.error();
+      }
     })());
   }
   // Everything else (API calls) goes straight to the network.
@@ -85,6 +96,14 @@ async function tile(req) {
     return res;
   } catch (e) {
     return new Response('', { status: 504 });
+  }
+}
+
+// Keep only the newest saved version of each app file.
+async function trimOldVersions(cache, url) {
+  for (const key of await cache.keys()) {
+    const k = new URL(key.url);
+    if (k.pathname === url.pathname && k.search !== url.search) await cache.delete(key);
   }
 }
 

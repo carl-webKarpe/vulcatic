@@ -186,3 +186,9 @@ html.js [data-reveal].is-visible { opacity: 1; translate: 0 0; }
 .legal h2 { margin-top: 2rem; font-size: 1.15rem; font-weight: 700; color: #1E2235; }
 .legal ul { list-style: disc; padding-left: 1.25rem; }
 .legal li + li { margin-top: .35rem; }
+
+/* Admin sidebar: thin dark scrollbar when the menu is taller than the screen */
+.admin-nav { scrollbar-width: thin; scrollbar-color: rgb(255 255 255 / .2) transparent; }
+.admin-nav::-webkit-scrollbar { width: 6px; }
+.admin-nav::-webkit-scrollbar-thumb { background: rgb(255 255 255 / .2); border-radius: 9999px; }
+.admin-nav::-webkit-scrollbar-track { background: transparent; }
