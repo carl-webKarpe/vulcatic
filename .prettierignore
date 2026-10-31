@@ -1,0 +1,3 @@
+# Built or third-party files: don't reformat them.
+assets/css/app.css
+assets/vendor/
