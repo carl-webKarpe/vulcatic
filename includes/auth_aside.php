@@ -11,5 +11,5 @@
     <p class="mt-4 text-white/85">Find vulcanizing shops and skilled locals around you. Request on-site repair,
        or walk to the nearest shop even when you're offline.</p>
   </div>
-  <p class="relative text-sm text-white/70">For travelers, tourists and locals.</p>
+  <p class="relative text-sm text-white/70">Now serving Siargao Island.</p>
 </aside>

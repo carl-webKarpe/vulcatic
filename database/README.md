@@ -10,8 +10,8 @@ move it to **InfinityFree** with **phpMyAdmin**.
 | `02_seed.sql` | Sample users, providers, jobs | Run | Import only for testing |
 | `03_test_queries.sql` | The queries each screen will use | Run to test | Not needed |
 
-All sample accounts use the password `password123`. Coordinates are placeholders
-in the Manila area; change them to your town.
+All sample accounts use the password `password123`. Sample vulcators and shops are on
+Siargao Island (General Luna, Dapa, Pilar, Del Carmen, San Isidro); positions are approximate.
 
 ## Run it in MySQL Workbench
 

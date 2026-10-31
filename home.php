@@ -38,7 +38,7 @@ require __DIR__ . '/includes/app_header.php';
       <div class="flex items-start justify-between gap-3">
         <div>
           <h2 class="text-lg font-bold">Request help</h2>
-          <p class="text-sm text-gray-500">A nearby vulcator comes to you.</p>
+          <p class="text-sm text-gray-500">A nearby vulcator on Siargao comes to you.</p>
         </div>
         <span id="online-count" class="shrink-0 rounded-full bg-gray-100 px-3 py-1 text-xs font-semibold text-gray-600">Looking…</span>
       </div>
@@ -71,16 +71,19 @@ require __DIR__ . '/includes/app_header.php';
       <div class="mt-5 space-y-3">
         <div>
           <label for="address" class="mb-1 block text-sm font-semibold">Landmark <span class="font-normal text-gray-400">(optional)</span></label>
-          <input id="address" name="address" maxlength="255" placeholder="e.g. In front of the church, Barangay 12"
+          <input id="address" name="address" maxlength="255" placeholder="e.g. Tourism Road, near Cloud 9"
                  class="w-full rounded-xl border border-gray-300 px-4 py-2.5 text-sm outline-none focus:border-brand-500 focus:ring-2 focus:ring-brand-100">
         </div>
         <div>
           <label for="notes" class="mb-1 block text-sm font-semibold">Notes for the vulcator <span class="font-normal text-gray-400">(optional)</span></label>
-          <textarea id="notes" name="notes" rows="2" maxlength="500" placeholder="e.g. Rear tire, I'm near a red tricycle"
+          <textarea id="notes" name="notes" rows="2" maxlength="500" placeholder="e.g. Rear tire, I'm beside the sari-sari store"
                     class="w-full rounded-xl border border-gray-300 px-4 py-2.5 text-sm outline-none focus:border-brand-500 focus:ring-2 focus:ring-brand-100"></textarea>
         </div>
       </div>
 
+      <p id="area-warning" class="mt-4 hidden rounded-lg bg-amber-50 px-3 py-2 text-sm text-amber-800 ring-1 ring-amber-200">
+        Vulcatic currently serves <b>Siargao Island</b> only. Move the pin to where you are on Siargao.
+      </p>
       <p id="request-error" class="mt-4 hidden rounded-lg bg-red-50 px-3 py-2 text-sm text-red-700 ring-1 ring-red-200"></p>
       <button id="request-btn" type="submit"
               class="btn-shine mt-5 flex w-full items-center justify-center gap-2 rounded-2xl bg-brand-500 py-3.5 font-semibold text-white shadow-lg shadow-brand-500/30 transition hover:bg-brand-600 disabled:opacity-60">

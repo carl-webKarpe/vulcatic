@@ -58,6 +58,7 @@ CREATE TABLE providers (
   offers_onsite        TINYINT(1) NOT NULL DEFAULT 1,   -- travels to stranded user
   accepts_walk_in      TINYINT(1) NOT NULL DEFAULT 1,   -- user goes to the shop
   is_online            TINYINT(1) NOT NULL DEFAULT 0,   -- "Currently online" toggle
+  municipality         VARCHAR(40) NULL,                 -- Siargao town, e.g. 'General Luna'
   service_radius_km    DECIMAL(5,2) NOT NULL DEFAULT 5.00,
   opening_hours        VARCHAR(120) NULL,               -- e.g. "Mon-Sun 7:00-19:00"
   verification_status  ENUM('pending','verified','rejected') NOT NULL DEFAULT 'pending',
@@ -71,6 +72,7 @@ CREATE TABLE providers (
   UNIQUE KEY uq_providers_user (user_id),
   KEY idx_providers_online (is_online, verification_status),
   KEY idx_providers_location (latitude, longitude),
+  KEY idx_providers_municipality (municipality),
   CONSTRAINT fk_providers_user FOREIGN KEY (user_id) REFERENCES users (id) ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
@@ -113,7 +115,8 @@ CREATE TABLE jobs (
   mode              ENUM('onsite','walk_in') NOT NULL DEFAULT 'onsite',
   customer_lat      DECIMAL(10,7) NOT NULL,
   customer_lng      DECIMAL(10,7) NOT NULL,
-  address_text      VARCHAR(255) NULL,                 -- "Barangay 12, Cemetery Street"
+  address_text      VARCHAR(255) NULL,                 -- landmark, e.g. "Tourism Road, near Cloud 9"
+  municipality      VARCHAR(40) NULL,                  -- Siargao town the request came from
   notes             VARCHAR(500) NULL,
   status            ENUM('searching','matched','accepted','on_the_way','arrived',
                          'in_progress','completed','paid','cancelled')
@@ -134,6 +137,7 @@ CREATE TABLE jobs (
   KEY idx_jobs_customer (customer_id, requested_at),
   KEY idx_jobs_provider (provider_id, status, completed_at),
   KEY idx_jobs_status (status),
+  KEY idx_jobs_municipality (municipality),
   CONSTRAINT fk_jobs_customer FOREIGN KEY (customer_id) REFERENCES users (id),
   CONSTRAINT fk_jobs_provider FOREIGN KEY (provider_id) REFERENCES providers (id) ON DELETE SET NULL,
   CONSTRAINT fk_jobs_service  FOREIGN KEY (service_id)  REFERENCES services (id)

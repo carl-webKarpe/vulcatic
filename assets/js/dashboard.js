@@ -31,6 +31,7 @@
       </div>
       <dl class="mt-4 space-y-2 rounded-2xl bg-gray-50 p-4 text-sm">
         <div class="flex gap-2"><dt class="w-20 shrink-0 text-gray-500">Distance</dt><dd class="font-semibold">${o.distance_km} km · about ${o.eta_min} min</dd></div>
+        ${o.municipality ? `<div class="flex gap-2"><dt class="w-20 shrink-0 text-gray-500">Town</dt><dd class="font-semibold">${esc(o.municipality)}</dd></div>` : ''}
         ${o.address ? `<div class="flex gap-2"><dt class="w-20 shrink-0 text-gray-500">Landmark</dt><dd class="font-semibold">${esc(o.address)}</dd></div>` : ''}
         ${o.notes ? `<div class="flex gap-2"><dt class="w-20 shrink-0 text-gray-500">Notes</dt><dd>${esc(o.notes)}</dd></div>` : ''}
       </dl>`;

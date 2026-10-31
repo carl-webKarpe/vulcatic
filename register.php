@@ -1,5 +1,6 @@
 <?php
 require __DIR__ . '/includes/bootstrap.php';
+require __DIR__ . '/includes/jobs.php';
 
 if ($user = current_user()) {
     redirect(home_for($user));
@@ -39,6 +40,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         if ($address === '') $errors['address'] = 'Enter your address or landmark.';
         if ($lat === false || $lng === false || $lat < -90 || $lat > 90 || $lng < -180 || $lng > 180) {
             $errors['location'] = 'Tap "Use my current location" so customers can find you.';
+        } elseif (!in_service_area($lat, $lng)) {
+            $errors['location'] = 'Vulcatic currently accepts vulcators on Siargao Island only.';
         }
         if (!$offersOnsite && !$acceptsWalkIn) {
             $errors['mode'] = 'Choose at least one: on-site repair or walk-in.';
@@ -64,9 +67,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
             if ($role === 'provider') {
                 $stmt = $pdo->prepare('INSERT INTO providers
-                    (user_id, provider_type, display_name, address, latitude, longitude, offers_onsite, accepts_walk_in, last_location_at)
-                    VALUES (?, ?, ?, ?, ?, ?, ?, ?, NOW())');
-                $stmt->execute([$userId, $providerType, $displayName, $address, $lat, $lng, $offersOnsite, $acceptsWalkIn]);
+                    (user_id, provider_type, display_name, address, municipality, latitude, longitude, offers_onsite, accepts_walk_in, last_location_at)
+                    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, NOW())');
+                $stmt->execute([$userId, $providerType, $displayName, $address, municipality_for($lat, $lng), $lat, $lng, $offersOnsite, $acceptsWalkIn]);
             }
             $pdo->commit();
         } catch (Throwable $ex) {
@@ -158,12 +161,12 @@ require __DIR__ . '/includes/header.php';
 
           <div>
             <label for="display_name" class="mb-1 block text-sm font-medium">Shop name <span class="font-normal text-gray-400">(skilled locals can leave blank)</span></label>
-            <input id="display_name" name="display_name" value="<?= old('display_name') ?>" placeholder="e.g. JD Vulcanizing" class="<?= $input ?> bg-white">
+            <input id="display_name" name="display_name" value="<?= old('display_name') ?>" placeholder="e.g. Dapa Vulcanizing Shop" class="<?= $input ?> bg-white">
             <?= field_error($errors, 'display_name') ?>
           </div>
           <div>
             <label for="address" class="mb-1 block text-sm font-medium">Address / landmark</label>
-            <input id="address" name="address" value="<?= old('address') ?>" placeholder="Barangay 12, Cemetery Street" class="<?= $input ?> bg-white">
+            <input id="address" name="address" value="<?= old('address') ?>" placeholder="e.g. Tourism Road, General Luna" class="<?= $input ?> bg-white">
             <?= field_error($errors, 'address') ?>
           </div>
 

@@ -1,6 +1,6 @@
 # Vulcatic
 
-Roadside tire help for tourists and locals. Find a nearby vulcanizing shop or a
+Roadside tire help on **Siargao Island** (Surigao del Norte) for tourists and locals. Find a nearby vulcanizing shop or a
 skilled local ("vulcator"), request on-site repair, or walk to the nearest shop
 when you have no signal.
 
@@ -62,7 +62,7 @@ You need two separate logins at once, so use a normal window **and** an incognit
 
 1. **Window A:** log in as Jose (`09174444444`). Make sure he's **Currently online**.
 2. **Window B:** log in as Juan (`09171111111`). Allow location, or tap the map near Jose's
-   pin (the sample vulcators are around Manila, so drag the orange pin there if you're far away).
+   pin on Tourism Road, General Luna. If you're not on Siargao, drag the orange pin there.
    Choose a service and vehicle, then **Find a vulcator**.
 3. **Window A:** the *New job request nearby!* popup appears within a few seconds. **Accept**.
 4. **Window A:** tap **Start navigation**, **I've arrived**, then **Tire fixed**. Window B
@@ -73,8 +73,23 @@ You need two separate logins at once, so use a normal window **and** an incognit
 
 How it works without WebSockets: the pages ask the server for updates every 3–4 seconds
 (`api/job_status.php`, `api/provider_poll.php`). A request goes to the 5 nearest free,
-verified, online vulcators within 5 km. The first to accept gets it. Unanswered requests
+verified, online vulcators within the town's search radius. The first to accept gets it. Unanswered requests
 time out after 60 s and are sent again. These numbers are in the `app_settings` table.
+
+## Service area: Siargao Island
+
+`includes/siargao.php` holds the towns, their approximate centres and search radius, and the
+box around the island. Requests and new vulcators outside Siargao are refused.
+
+| Phase | Towns | Search radius |
+|---|---|---|
+| 1 | General Luna, Dapa | 5 km |
+| 2 | Pilar, Del Carmen | 10 km |
+| 3 | San Isidro, San Benito, Burgos, Santa Monica | 12 km |
+
+Socorro (Bucas Grande) is left out because it's a separate island. The centres and sample
+locations are approximate, so check them on the map and adjust them in `includes/siargao.php`
+and `database/02_seed.sql`.
 
 ## Changing styles (Tailwind)
 

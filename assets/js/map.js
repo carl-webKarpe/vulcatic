@@ -1,7 +1,13 @@
 // Leaflet map helpers shared by the customer and vulcator screens.
 const VMap = {
-  // Placeholder centre until we know where the user is (Manila).
-  fallback: [14.5995, 120.9842],
+  // Until we know where the user is: General Luna, Siargao.
+  fallback: [9.7900, 126.1500],
+  // Rough box around Siargao (same as includes/siargao.php).
+  bounds: { south: 9.70, north: 10.08, west: 125.92, east: 126.20 },
+  inArea([lat, lng]) {
+    const b = VMap.bounds;
+    return lat >= b.south && lat <= b.north && lng >= b.west && lng <= b.east;
+  },
 
   create(el, center, zoom = 15) {
     const map = L.map(el, { zoomControl: false, attributionControl: true }).setView(center || VMap.fallback, zoom);

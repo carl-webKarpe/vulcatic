@@ -8,6 +8,7 @@ $lat = input_float('lat');
 $lng = input_float('lng');
 if (!valid_lat_lng($lat, $lng)) json_error('Bad location.');
 
-db()->prepare('UPDATE providers SET latitude = ?, longitude = ?, last_location_at = NOW() WHERE user_id = ?')
-    ->execute([$lat, $lng, $user['id']]);
+db()->prepare('UPDATE providers SET latitude = ?, longitude = ?, municipality = COALESCE(?, municipality),
+               last_location_at = NOW() WHERE user_id = ?')
+    ->execute([$lat, $lng, municipality_for($lat, $lng), $user['id']]);
 json_out(['ok' => true]);

@@ -19,6 +19,11 @@ if ((input()['action'] ?? '') !== 'accept') {
 if (active_job_id_for_provider($provider['id'])) json_error('Finish your current job first.');
 
 $job = load_job((int) $offer['job_id']);
+$km  = distance_km((float) $provider['latitude'], (float) $provider['longitude'], (float) $job['customer_lat'], (float) $job['customer_lng']);
+if ($km > search_radius_for($job['municipality']) + 3) {
+    db()->prepare("UPDATE job_offers SET status = 'expired' WHERE id = ?")->execute([$offer['id']]);
+    json_error('You are too far from this customer now (' . round($km, 1) . ' km).', 409);
+}
 $stmt = db()->prepare('SELECT price FROM provider_services WHERE provider_id = ? AND service_id = ?');
 $stmt->execute([$provider['id'], $job['service_id']]);
 $price = $stmt->fetchColumn();

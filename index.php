@@ -19,7 +19,7 @@ $headExtra = <<<'HTML'
 </script>
 HTML;
 
-$pageTitle = 'Roadside tire help near you';
+$pageTitle = 'Roadside tire help on Siargao';
 $bodyClass = '!bg-white overflow-x-hidden';
 require __DIR__ . '/includes/header.php';
 
@@ -88,7 +88,7 @@ $check = '<svg viewBox="0 0 24 24" class="h-5 w-5 shrink-0" fill="none" stroke="
       <div>
         <p data-reveal class="inline-flex items-center gap-2 rounded-full bg-brand-50 px-3 py-1.5 text-xs font-semibold text-brand-700 ring-1 ring-brand-100">
           <span class="relative flex h-2 w-2"><span class="absolute inline-flex h-full w-full animate-ping rounded-full bg-brand-500 opacity-60"></span><span class="relative inline-flex h-2 w-2 rounded-full bg-brand-500"></span></span>
-          Roadside tire help for travelers &amp; locals
+          Now serving Siargao Island
         </p>
         <h1 data-reveal style="--d: 80ms" class="mt-5 text-4xl font-bold leading-[1.1] tracking-tight sm:text-5xl lg:text-6xl">
           <span class="rotator block h-[1.15em] overflow-hidden text-brand-500" aria-live="polite">
@@ -97,7 +97,7 @@ $check = '<svg viewBox="0 0 24 24" class="h-5 w-5 shrink-0" fill="none" stroke="
           Help is minutes away.
         </h1>
         <p data-reveal style="--d: 160ms" class="mt-5 max-w-lg text-lg text-gray-600">
-          Vulcatic connects you with the nearest vulcanizing shop or skilled local. They come to you, or we guide you to them, even with no signal.
+          Surfing Cloud 9 or riding to Magpupungko? Vulcatic connects you with the nearest vulcanizing shop or skilled local on Siargao. They come to you, or we guide you to them, even with no signal.
         </p>
         <div data-reveal style="--d: 240ms" class="mt-8 flex flex-col gap-3 sm:flex-row">
           <a href="<?= url('register.php?role=customer') ?>" class="magnetic btn-shine group inline-flex items-center justify-center gap-2 rounded-2xl bg-brand-500 px-7 py-4 font-semibold text-white shadow-lg shadow-brand-500/30 transition hover:bg-brand-600">
@@ -197,7 +197,7 @@ $check = '<svg viewBox="0 0 24 24" class="h-5 w-5 shrink-0" fill="none" stroke="
   <!-- ============ MARQUEE ============ -->
   <div class="marquee border-y border-gray-100 bg-gray-50 py-4" aria-hidden="true">
     <div class="marquee-track flex w-max gap-10 text-sm font-semibold uppercase tracking-widest text-gray-400">
-      <?php for ($k = 0; $k < 2; $k++): foreach (['Flat tire repair', 'Vulcanizing', 'Air refill', 'Tire replacement', 'Battery jump-start', 'On-site service', 'Walk-in shops'] as $s): ?>
+      <?php for ($k = 0; $k < 2; $k++): foreach (['General Luna', 'Dapa', 'Pilar', 'Del Carmen', 'San Isidro', 'San Benito', 'Burgos', 'Santa Monica'] as $s): ?>
         <span class="flex items-center gap-10"><?= $s ?><span class="h-1.5 w-1.5 rounded-full bg-brand-500"></span></span>
       <?php endforeach; endfor; ?>
     </div>
@@ -319,7 +319,7 @@ $check = '<svg viewBox="0 0 24 24" class="h-5 w-5 shrink-0" fill="none" stroke="
             <svg viewBox="0 0 24 24" class="h-7 w-7" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 21s-7-6.2-7-11a7 7 0 0 1 14 0c0 4.8-7 11-7 11z"/><circle cx="12" cy="10" r="2.5"/></svg>
           </span>
           <h3 class="mt-6 text-2xl font-bold">For travelers &amp; locals</h3>
-          <p class="mt-2 text-gray-600">New to the area? Vulcatic knows who can fix your tire nearby.</p>
+          <p class="mt-2 text-gray-600">New to Siargao? Vulcatic knows who can fix your tire nearby, from General Luna to Santa Monica.</p>
           <ul class="mt-6 space-y-3 text-sm text-gray-700">
             <li class="flex gap-2"><span class="text-brand-500"><?= $check ?></span>Shops and skilled locals in one map</li>
             <li class="flex gap-2"><span class="text-brand-500"><?= $check ?></span>On-site repair or walk-in</li>
@@ -376,7 +376,7 @@ $check = '<svg viewBox="0 0 24 24" class="h-5 w-5 shrink-0" fill="none" stroke="
 <footer class="border-t border-gray-100 py-10">
   <div class="mx-auto flex max-w-6xl flex-col items-center justify-between gap-4 px-5 text-sm text-gray-500 md:flex-row md:px-8">
     <a href="<?= url('index.php') ?>" class="flex items-center gap-2 font-semibold text-gray-800"><?= logo_full('h-12') ?> Vulcatic</a>
-    <p>Roadside tire help for travelers, tourists and locals.</p>
+    <p>Roadside tire help on Siargao Island, Surigao del Norte.</p>
     <p>© <?= date('Y') ?> Vulcatic</p>
   </div>
 </footer>

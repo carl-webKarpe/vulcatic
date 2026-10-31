@@ -11,6 +11,8 @@ if ($id = active_job_id_for_customer($user['id'])) {
 $lat = input_float('lat');
 $lng = input_float('lng');
 if (!valid_lat_lng($lat, $lng)) json_error('We need your location. Allow location access or tap the map.');
+$municipality = municipality_for($lat, $lng);
+if (!$municipality) json_error(OUTSIDE_AREA_MESSAGE);
 
 $vehicles = ['motorcycle', 'car', 'tricycle', 'bicycle', 'van', 'truck', 'other'];
 $vehicle  = in_array(input()['vehicle_type'] ?? '', $vehicles, true) ? input()['vehicle_type'] : null;
@@ -28,10 +30,10 @@ $fees    = job_fees((float) $service['base_price']); // estimate; set to the vul
 $pdo = db();
 $pdo->beginTransaction();
 $pdo->prepare('INSERT INTO jobs (job_code, customer_id, service_id, vehicle_type, mode, customer_lat, customer_lng,
-                                 address_text, notes, status, service_fee, convenience_fee, total_amount,
+                                 address_text, municipality, notes, status, service_fee, convenience_fee, total_amount,
                                  platform_fee, provider_earning)
-               VALUES (?, ?, ?, ?, \'onsite\', ?, ?, ?, ?, \'searching\', ?, ?, ?, ?, ?)')
-    ->execute([new_job_code(), $user['id'], $service['id'], $vehicle, $lat, $lng, $address, $notes,
+               VALUES (?, ?, ?, ?, \'onsite\', ?, ?, ?, ?, ?, \'searching\', ?, ?, ?, ?, ?)')
+    ->execute([new_job_code(), $user['id'], $service['id'], $vehicle, $lat, $lng, $address, $municipality, $notes,
                $fees['service_fee'], $fees['convenience_fee'], $fees['total_amount'], $fees['platform_fee'], $fees['provider_earning']]);
 $jobId = (int) $pdo->lastInsertId();
 log_status($jobId, 'searching', 'Location detected');

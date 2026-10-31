@@ -1,6 +1,6 @@
 // Customer home: live map of nearby help + the request form.
 (() => {
-  const map = VMap.create('map', null, 15);
+  const map = VMap.create('map', null, 13);
   const me = L.marker(VMap.fallback, { icon: VMap.icon('me'), draggable: true, zIndexOffset: 1000 }).addTo(map);
   const layer = L.layerGroup().addTo(map);
   let haveLocation = false;
@@ -13,17 +13,21 @@
   function setMe(latlng, recenter = true) {
     me.setLatLng(latlng);
     haveLocation = true;
+    const ll = me.getLatLng();
+    areaBox.classList.toggle('hidden', VMap.inArea([ll.lat, ll.lng]));
     if (recenter) map.setView(latlng, Math.max(map.getZoom(), 15));
     loadNearby();
   }
 
-  me.on('dragend', () => { haveLocation = true; loadNearby(); });
+  const areaBox = document.getElementById('area-warning');
+  me.on('dragend', () => { setMe(me.getLatLng(), false); });
   map.on('click', (e) => setMe(e.latlng, false));
 
   async function useMyLocation() {
     try {
-      setMe(await VMap.locate());
-      hint.textContent = 'Not quite right? Drag the orange pin.';
+      const pos = await VMap.locate();
+      setMe(pos);
+      hint.textContent = VMap.inArea(pos) ? 'Not quite right? Drag the orange pin.' : 'You seem to be outside Siargao. Drag the pin to your spot.';
     } catch (e) {
       hint.textContent = e.message;
     }

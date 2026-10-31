@@ -9,7 +9,8 @@
 -- 1. User Home / "Finding help": nearest ONLINE, VERIFIED providers
 --    Haversine formula (km). Works on MySQL and MariaDB.
 -- ---------------------------------------------------------------------
-SET @lat = 14.5995000, @lng = 120.9842000, @radius_km = 5, @service_id = 1;
+-- Point on Tourism Road, General Luna (Siargao)
+SET @lat = 9.7900000, @lng = 126.1580000, @radius_km = 5, @service_id = 1;
 
 SELECT p.id, p.display_name, p.provider_type, ps.price,
        p.rating_avg, p.rating_count,
@@ -82,6 +83,8 @@ WHERE o.provider_id = @provider_id
 -- 6. Accept a job (run as ONE transaction). The "AND status='searching'"
 --    check makes sure only the first provider who taps Accept wins.
 -- ---------------------------------------------------------------------
+-- Create a request in the app first (log in as Juan, tap Find a vulcator),
+-- then put its id here. Sample jobs 1-3 are already finished.
 SET @job_id = 4;
 
 START TRANSACTION;

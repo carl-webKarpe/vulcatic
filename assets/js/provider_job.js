@@ -48,7 +48,8 @@
           <p class="truncate text-sm text-gray-500">${esc(j.service)} · ${esc(j.vehicle)}</p></div>
         <span class="rounded-xl bg-green-50 px-3 py-1.5 text-sm font-bold text-green-700 ring-1 ring-green-200">${peso(j.total)}</span>
       </div>
-      ${j.address || j.notes ? `<dl class="mt-4 space-y-2 rounded-2xl bg-gray-50 p-4 text-sm">
+      ${j.address || j.notes || j.municipality ? `<dl class="mt-4 space-y-2 rounded-2xl bg-gray-50 p-4 text-sm">
+        ${j.municipality ? `<div class="flex gap-2"><dt class="w-20 shrink-0 text-gray-500">Town</dt><dd class="font-semibold">${esc(j.municipality)}</dd></div>` : ''}
         ${j.address ? `<div class="flex gap-2"><dt class="w-20 shrink-0 text-gray-500">Landmark</dt><dd class="font-semibold">${esc(j.address)}</dd></div>` : ''}
         ${j.notes ? `<div class="flex gap-2"><dt class="w-20 shrink-0 text-gray-500">Notes</dt><dd>${esc(j.notes)}</dd></div>` : ''}</dl>` : ''}
       <div class="mt-4 grid grid-cols-2 gap-2">

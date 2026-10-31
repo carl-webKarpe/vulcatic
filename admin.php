@@ -12,7 +12,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     redirect('admin.php');
 }
 
-$pending = db()->query("SELECT p.id, p.display_name, p.provider_type, p.address, p.latitude, p.longitude,
+$pending = db()->query("SELECT p.id, p.display_name, p.provider_type, p.address, p.municipality, p.latitude, p.longitude,
                                p.offers_onsite, p.accepts_walk_in, p.created_at, u.full_name, u.phone
                         FROM providers p JOIN users u ON u.id = p.user_id
                         WHERE p.verification_status = 'pending'
@@ -37,7 +37,7 @@ require __DIR__ . '/includes/app_header.php';
             <p class="font-semibold"><?= e($p['display_name']) ?>
               <span class="ml-1 rounded bg-gray-100 px-1.5 py-0.5 text-xs font-medium text-gray-600"><?= $p['provider_type'] === 'shop' ? 'Shop' : 'Skilled local' ?></span></p>
             <p class="text-sm text-gray-500"><?= e($p['full_name']) ?> · <?= e($p['phone']) ?></p>
-            <p class="text-sm text-gray-500"><?= e($p['address']) ?> ·
+            <p class="text-sm text-gray-500"><?= e($p['address']) ?><?= $p['municipality'] ? ', ' . e($p['municipality']) : '' ?> ·
               <a class="text-brand-600 hover:underline" target="_blank" rel="noopener"
                  href="https://www.openstreetmap.org/?mlat=<?= e($p['latitude']) ?>&mlon=<?= e($p['longitude']) ?>#map=18/<?= e($p['latitude']) ?>/<?= e($p['longitude']) ?>">view on map</a></p>
             <p class="text-xs text-gray-400"><?= $p['offers_onsite'] ? 'On-site' : '' ?><?= $p['offers_onsite'] && $p['accepts_walk_in'] ? ' · ' : '' ?><?= $p['accepts_walk_in'] ? 'Walk-in' : '' ?></p>

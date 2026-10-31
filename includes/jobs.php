@@ -1,5 +1,7 @@
 <?php
 // Job matching and status rules, shared by the pages and the API.
+
+require_once __DIR__ . '/siargao.php';
 //
 // Status flow:
 //   searching   no vulcator has the request right now
@@ -74,7 +76,7 @@ function find_candidates(array $job, int $limit = 5): array
     $stmt->execute([
         $job['customer_lat'], $job['customer_lng'], $job['customer_lat'],
         $job['service_id'], $job['customer_id'], $job['id'],
-        (float) setting('default_search_radius_km', '5'),
+        search_radius_for($job['municipality']),
     ]);
     return $stmt->fetchAll();
 }
@@ -201,6 +203,7 @@ function job_payload(array $job): array
         'service'     => $job['service_name'],
         'vehicle'     => ucfirst($job['vehicle_type']),
         'address'     => $job['address_text'],
+        'municipality' => $job['municipality'],
         'notes'       => $job['notes'],
         'lat'         => (float) $job['customer_lat'],
         'lng'         => (float) $job['customer_lng'],
