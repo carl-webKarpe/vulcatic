@@ -196,5 +196,5 @@ UPDATE users SET terms_accepted_at = NOW() - INTERVAL 30 DAY WHERE id > 0;
 -- after every new rating, because shared hosting does not allow triggers)
 UPDATE providers
 SET rating_count = (SELECT COUNT(*) FROM ratings r WHERE r.provider_id = providers.id),
-    rating_avg   = COALESCE((SELECT AVG(stars) FROM ratings r WHERE r.provider_id = providers.id), 0)
+    rating_avg   = COALESCE((SELECT ROUND(AVG(stars), 2) FROM ratings r WHERE r.provider_id = providers.id), 0)
 WHERE id > 0;

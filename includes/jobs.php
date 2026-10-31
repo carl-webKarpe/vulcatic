@@ -242,7 +242,7 @@ function job_fees(float $serviceFee): array
 function refresh_provider_rating(int $providerId): void
 {
     db()->prepare('UPDATE providers p
-                   JOIN (SELECT provider_id, AVG(stars) a, COUNT(*) c FROM ratings WHERE provider_id = ? GROUP BY provider_id) r
+                   JOIN (SELECT provider_id, ROUND(AVG(stars), 2) a, COUNT(*) c FROM ratings WHERE provider_id = ? GROUP BY provider_id) r
                      ON r.provider_id = p.id
                    SET p.rating_avg = r.a, p.rating_count = r.c')->execute([$providerId]);
 }
