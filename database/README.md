@@ -10,6 +10,7 @@ move it to **InfinityFree** with **phpMyAdmin**.
 | `02_seed.sql` | Sample users, vulcators and two weeks of job history on Siargao | Run | Import only for testing |
 | `02_production.sql` | Settings, services and one admin (no sample people). Use **instead of** `02_seed.sql` when publishing | Optional | **Import this** when going live |
 | `03_test_queries.sql` | The queries each screen will use | Run to test | Not needed |
+| `04_upgrade.sql` | Brings an **existing** database up to date after a `git pull`, keeping your data. Safe to run any time | Run after updates | Run after updates (remove the `USE` line) |
 
 All sample accounts use the password `password123`. Sample vulcators and shops are on
 Siargao Island (General Luna, Dapa, Pilar, Del Carmen, San Isidro); positions are approximate.
@@ -25,6 +26,11 @@ Siargao Island (General Luna, Dapa, Pilar, Del Carmen, San Isidro); positions ar
 6. To see the table diagram: **Database → Reverse Engineer…** → choose `vulcatic`.
 
 Running `01_schema.sql` again wipes the tables, so you can always start fresh.
+
+## After a `git pull`
+
+If a page shows *Unknown column* or *Table … doesn't exist*, your database is older than the code.
+Run `04_upgrade.sql`: it adds whatever is missing and keeps your data. The last result should say **OK** on every row.
 
 ## Move it to InfinityFree
 
