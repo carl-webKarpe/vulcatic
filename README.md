@@ -24,15 +24,18 @@ tailwind.config.js
 ## Run it locally (XAMPP + MySQL Workbench)
 
 - **MySQL Workbench** is where you build, view and test the database.
-- **XAMPP** only runs the server: MySQL (which Workbench connects to) and Apache
-  (which runs the PHP pages). Workbench cannot run the website by itself.
+- **XAMPP** is only used for **Apache**, which runs the PHP pages. Workbench cannot
+  run the website by itself.
+- The database runs on the same MySQL server your Workbench connection uses.
+  If that's your own MySQL Server install, **don't start MySQL in the XAMPP panel**:
+  both use port 3306 and would conflict.
 
-1. Install [XAMPP](https://www.apachefriends.org/) and start **Apache** and **MySQL**.
-2. Create the database in MySQL Workbench (connect to `localhost`, user `root`,
-   no password) by running the files in `database/` in order. See `database/README.md`.
+1. Install [XAMPP](https://www.apachefriends.org/) and start **Apache** only.
+2. Create the database in MySQL Workbench by running the files in `database/` in order. See `database/README.md`.
 3. Copy the **contents** of `htdocs/` into `C:\xampp\htdocs\vulcatic\`.
-4. In that folder, copy `config/config.example.php` to `config/config.php`.
-   The defaults already match XAMPP.
+4. In that folder, copy `config/config.example.php` to `config/config.php` and
+   set `user` / `password` (and `port` if it isn't 3306) to the same values as
+   your Workbench connection.
 5. Open <http://localhost/vulcatic/>.
 
 Test accounts (password `password123`):

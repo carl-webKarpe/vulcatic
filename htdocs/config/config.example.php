@@ -3,7 +3,10 @@
 // config.php is ignored by git so passwords never get pushed.
 
 return [
-    // Local (XAMPP): host 'localhost', user 'root', empty password.
+    // Local: use the SAME host, port, user and password as your
+    // MySQL Workbench connection (Workbench -> Database -> Manage Connections).
+    // MySQL Server installed on Windows usually has a root password you chose
+    // during install. XAMPP's own MySQL uses root with an empty password.
     // InfinityFree: copy these from Control Panel -> MySQL Databases.
     'db' => [
         'host'     => 'localhost',
