@@ -19,7 +19,7 @@ return [
     'app' => [
         'name'     => 'Vulcatic',
         // Leave as 'auto' - the app works out its own folder.
-        // Only set it by hand if links break, e.g. '/vulcatic/htdocs'.
+        // Only set it by hand if links break, e.g. '/vulcatic'.
         'base_url' => 'auto',
         'debug'    => true,   // set to false on InfinityFree
     ],

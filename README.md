@@ -7,19 +7,21 @@ when you have no signal.
 **Stack:** PHP 8 + MySQL, Tailwind CSS, plain JavaScript. Hosted on InfinityFree.
 
 ```
+config/              config.example.php -> copy to config.php
+includes/            bootstrap, database, auth, shared layout parts
+assets/              css (built), js, images
+index.php            welcome page
+login.php  register.php  logout.php
+home.php             customer home
+dashboard.php        vulcator dashboard (stats, online toggle, recent jobs)
+admin.php            approve / reject new vulcators
 database/            SQL for MySQL Workbench / phpMyAdmin (see database/README.md)
-htdocs/              everything that gets uploaded to the web server
-  config/            config.example.php -> copy to config.php
-  includes/          bootstrap, database, auth, shared layout parts
-  assets/            css (built), js, images
-  index.php          welcome page
-  login.php  register.php  logout.php
-  home.php           customer home
-  dashboard.php      vulcator dashboard (stats, online toggle, recent jobs)
-  admin.php          approve / reject new vulcators
-tailwind/input.css   Tailwind source -> builds htdocs/assets/css/app.css
+tailwind/input.css   Tailwind source -> builds assets/css/app.css
 tailwind.config.js
 ```
+
+`.htaccess` blocks the browser from opening `database/`, `tailwind/`, `config/`,
+`includes/`, `.git` and the `.md` / `.sql` files.
 
 ## Run it locally (XAMPP + MySQL Workbench)
 
@@ -32,7 +34,9 @@ tailwind.config.js
 
 1. Install [XAMPP](https://www.apachefriends.org/) and start **Apache** only.
 2. Create the database in MySQL Workbench by running the files in `database/` in order. See `database/README.md`.
-3. Copy the **contents** of `htdocs/` into `C:\xampp\htdocs\vulcatic\`.
+3. Clone this repo into XAMPP's `htdocs` folder, so the project is at
+   `<xampp folder>\htdocs\vulcatic\`. Click **Explorer** in the XAMPP Control Panel
+   to see which XAMPP folder your Apache uses.
 4. In that folder, copy `config/config.example.php` to `config/config.php` and
    set `user` / `password` (and `port` if it isn't 3306) to the same values as
    your Workbench connection.
@@ -50,7 +54,7 @@ New vulcators start as **pending**. Log in as admin to approve them before they 
 
 ## Changing styles (Tailwind)
 
-The site uses a pre-built `htdocs/assets/css/app.css`, so the server needs nothing extra.
+The site uses a pre-built `assets/css/app.css`, so the server needs nothing extra.
 If you add Tailwind classes that weren't used before, rebuild the CSS. You don't need Node.js:
 
 1. Download the standalone CLI for your OS from
@@ -59,7 +63,7 @@ If you add Tailwind classes that weren't used before, rebuild the CSS. You don't
 2. From the project root, run:
 
 ```
-tailwindcss-windows-x64.exe -i tailwind/input.css -o htdocs/assets/css/app.css --minify --watch
+tailwindcss-windows-x64.exe -i tailwind/input.css -o assets/css/app.css --minify --watch
 ```
 
 `--watch` rebuilds every time you save. Put custom (non-Tailwind) CSS in `tailwind/input.css`.
@@ -68,9 +72,10 @@ tailwindcss-windows-x64.exe -i tailwind/input.css -o htdocs/assets/css/app.css -
 
 1. Create the database in the control panel, then import `database/01_schema.sql`
    in phpMyAdmin (see `database/README.md`).
-2. Upload the **contents** of `htdocs/` into the account's `htdocs/` folder
-   (File Manager or FTP with FileZilla).
+2. Upload `index.php`, the other `.php` pages, `.htaccess`, `assets/`, `config/` and
+   `includes/` into the account's `htdocs/` folder (File Manager or FTP with FileZilla).
+   You don't need to upload `database/`, `tailwind/` or the `.md` files.
 3. Create `config/config.php` on the server with the InfinityFree database
-   host/name/user/password, `base_url` set to `''` and `debug` set to `false`.
+   host/name/user/password and `debug` set to `false` (leave `base_url` as `'auto'`).
 4. Turn on the free SSL certificate. The "Use my current location" button only
    works on `https://` (or `localhost`).
