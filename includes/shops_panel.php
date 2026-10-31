@@ -1,0 +1,35 @@
+<?php // Shops map + lists. Same element ids as offline.html; assets/js/offline.js fills both. ?>
+  <main class="mx-auto max-w-6xl md:grid md:grid-cols-[1fr_420px] md:gap-6 md:px-8 md:py-6">
+    <section class="relative h-[38vh] md:h-[calc(100vh-9.5rem)] md:overflow-hidden md:rounded-3xl md:ring-1 md:ring-black/5">
+      <div id="map" class="h-full w-full"></div>
+      <button id="locate-btn" type="button" class="absolute left-3 top-3 z-[500] flex items-center gap-2 rounded-xl bg-white px-3 py-2 text-sm font-semibold shadow-lg ring-1 ring-black/5 hover:bg-gray-50">
+        <svg viewBox="0 0 24 24" class="h-4 w-4 text-brand-500" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="12" r="3"/><path d="M12 2v3m0 14v3M2 12h3m14 0h3"/></svg>
+        Find me (GPS)
+      </button>
+    </section>
+
+    <section class="space-y-4 px-5 pb-28 pt-5 md:h-[calc(100vh-9.5rem)] md:overflow-y-auto md:px-0 md:pb-6 md:pt-0">
+      <div id="offline-note" class="hidden rounded-2xl bg-ink-900 p-4 text-white">
+        <p class="font-semibold">No signal? No problem.</p>
+        <p class="mt-1 text-sm text-white/75">These shops are saved on your phone. GPS still works without data, and calls and texts often go through when mobile data doesn't.</p>
+      </div>
+
+      <div class="rounded-3xl bg-white p-5 shadow-sm ring-1 ring-black/5">
+        <div class="flex items-baseline justify-between gap-3">
+          <h2 class="font-bold">Walk-in shops</h2>
+          <span id="saved-at" class="text-xs text-gray-400"></span>
+        </div>
+        <ul id="shop-list" class="mt-3 divide-y divide-gray-100 text-sm"></ul>
+      </div>
+
+      <div class="rounded-3xl bg-white p-5 shadow-sm ring-1 ring-black/5">
+        <h2 class="font-bold">Vulcators who come to you</h2>
+        <p class="text-sm text-gray-500">Call or text them directly if you can't use the app.</p>
+        <ul id="vulc-list" class="mt-3 divide-y divide-gray-100 text-sm"></ul>
+      </div>
+
+      <p id="empty" class="hidden rounded-2xl bg-amber-50 p-4 text-sm text-amber-800 ring-1 ring-amber-200">
+        No saved shops yet. Open Vulcatic once while you have signal and log in. The shop list is then saved on your phone for later.
+      </p>
+    </section>
+  </main>

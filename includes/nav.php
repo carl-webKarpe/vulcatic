@@ -13,10 +13,10 @@ const NAV_ICONS = [
 function nav_items(array $user): array
 {
     return match ($user['role']) {
-        'provider' => ['home' => ['Home', 'dashboard.php'], 'shops' => ['Shops', 'offline.html'],
+        'provider' => ['home' => ['Home', 'dashboard.php'], 'shops' => ['Shops', 'shops.php'],
                        'history' => ['Earnings', 'history.php'], 'profile' => ['Profile', 'profile.php']],
         'admin'    => ['admin' => ['Admin', 'admin.php'], 'profile' => ['Profile', 'profile.php']],
-        default    => ['home' => ['Home', 'home.php'], 'shops' => ['Shops', 'offline.html'],
+        default    => ['home' => ['Home', 'home.php'], 'shops' => ['Shops', 'shops.php'],
                        'history' => ['History', 'history.php'], 'profile' => ['Profile', 'profile.php']],
     };
 }

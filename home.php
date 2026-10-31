@@ -103,7 +103,7 @@ require __DIR__ . '/includes/app_header.php';
       <ul id="nearby-list" class="mt-3 divide-y divide-gray-100 text-sm">
         <li class="py-6 text-center text-gray-400">Set your location to see who's near you.</li>
       </ul>
-      <a href="<?= url('offline.html') ?>" class="mt-3 flex items-center justify-between rounded-xl bg-gray-50 px-4 py-3 text-sm font-semibold hover:bg-gray-100">
+      <a href="<?= url('shops.php') ?>" class="mt-3 flex items-center justify-between rounded-xl bg-gray-50 px-4 py-3 text-sm font-semibold hover:bg-gray-100">
         <span>No signal later? All shops are saved for offline use.</span><span class="text-brand-600">Open →</span>
       </a>
     </div>
