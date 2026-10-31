@@ -10,6 +10,14 @@ AddType application/manifest+json .webmanifest
 # Always open the PHP app, never a stray index.html
 DirectoryIndex index.php
 
+# Friendly page for addresses that don't exist (works in any folder)
+<IfModule mod_rewrite.c>
+  RewriteEngine On
+  RewriteCond %{REQUEST_FILENAME} !-f
+  RewriteCond %{REQUEST_FILENAME} !-d
+  RewriteRule ^ 404.php [L]
+</IfModule>
+
 # Block project files that are not part of the website
 <FilesMatch "(\.(md|sql|json|lock)|^tailwind\.config\.js|^\.git.*)$">
   Require all denied

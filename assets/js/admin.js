@@ -14,6 +14,4 @@
     });
     VMap.fit(map, towns.map((t) => [t.lat, t.lng]), 11);
   }
-  document.querySelectorAll('[data-confirm]').forEach((b) =>
-    b.addEventListener('click', (e) => { if (!confirm(b.dataset.confirm)) e.preventDefault(); }));
 })();

@@ -5,7 +5,14 @@
   const panel = document.getElementById('panel');
   const map = VMap.create('map', null, 15);
   let meMarker, vulcMarker, line, fitted = false, lastKey = '', poller;
-  let payMethod = 'cash', stars = 0;
+  let payMethod = 'cash', stars = 0, lastStatus = null;
+  const ALERTS = {
+    accepted:  (j) => ['Help is coming!', `${j.provider.name} accepted your request.`],
+    arrived:   (j) => ['Your vulcator has arrived', `${j.provider.name} is with you now.`],
+    completed: () => ['Tire fixed!', 'Choose how to pay.'],
+    paid:      () => ['Payment confirmed', 'Thanks for using Vulcatic!'],
+    cancelled: () => ['Request cancelled', ''],
+  };
 
   const STEPS = [
     ['Location detected', 'Your spot is on the map'],
@@ -181,7 +188,7 @@
 
   function bindPanel(j) {
     panel.querySelectorAll('[data-cancel]').forEach((b) => b.addEventListener('click', async () => {
-      if (!confirm('Cancel this request?')) return;
+      if (!(await confirmSheet({ title: 'Cancel this request?', text: 'Nearby vulcators will stop seeing it.', confirm: 'Yes, cancel', cancel: 'Keep waiting', danger: true }))) return;
       try { await api('job_cancel.php', { id: jobId }); poller.now(); } catch (e) { toast(e.message, 'error'); }
     }));
 
@@ -232,6 +239,8 @@
 
   async function refresh() {
     const { job: j, log } = await api('job_status.php?id=' + jobId);
+    if (lastStatus && j.status !== lastStatus && ALERTS[j.status]) Alerts.alert('update', ...ALERTS[j.status](j));
+    lastStatus = j.status;
     updateMap(j);
     // Only rebuild the panel when something visible changed, so inputs keep focus.
     const key = [j.status, j.pending_offers, j.provider?.eta_min, j.payment?.status, j.payment?.method, j.rated].join('|');

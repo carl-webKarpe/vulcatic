@@ -5,7 +5,7 @@
   const panel = document.getElementById('panel');
   const dir = document.getElementById('directions');
   const map = VMap.create('map', null, 15);
-  let custMarker, meMarker, line, fitted = false, lastKey = '', poller, busy = false;
+  let custMarker, meMarker, line, fitted = false, lastKey = '', poller, busy = false, lastPay = undefined, lastState = null;
 
   const icon = {
     check: '<svg viewBox="0 0 24 24" class="h-4 w-4" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg>',
@@ -139,8 +139,8 @@
 
   function bind() {
     panel.querySelector('[data-action]')?.addEventListener('click', (e) => advance(e.target.dataset.action, e.target));
-    panel.querySelector('[data-paid]')?.addEventListener('click', (e) => {
-      if (confirm('Confirm you received the payment?')) advance('paid', e.target);
+    panel.querySelector('[data-paid]')?.addEventListener('click', async (e) => {
+      if (await confirmSheet({ title: 'Payment received?', text: 'Only confirm once the cash is in your hand or the GCash payment shows in your app.', confirm: 'Yes, received' })) advance('paid', e.target);
     });
   }
 
@@ -170,6 +170,10 @@
 
   async function refresh() {
     const { job: j, today } = await api('job_status.php?id=' + jobId);
+    const payKey = j.payment ? j.payment.method + (j.payment.reference || '') : null;
+    if (lastPay !== undefined && payKey && payKey !== lastPay) Alerts.alert('update', 'Customer paid', j.payment.method === 'gcash' ? `GCash · Ref ${j.payment.reference}` : 'Cash payment');
+    if (lastState && lastState !== 'cancelled' && j.status === 'cancelled') Alerts.alert('update', 'Job cancelled', 'The customer cancelled the request.');
+    lastPay = payKey; lastState = j.status;
     status = j.status;
     updateMap(j);
     const key = [j.status, j.payment?.method, j.payment?.reference].join('|');

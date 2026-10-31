@@ -22,6 +22,10 @@ require __DIR__ . '/includes/app_header.php';
     <div id="map" class="h-full w-full"></div>
   </section>
   <section class="px-5 pb-28 pt-5 md:h-[calc(100vh-8.5rem)] md:overflow-y-auto md:px-0 md:pb-6 md:pt-0">
+    <button type="button" data-enable-alerts="update"
+            class="mb-4 hidden flex w-full items-center justify-between rounded-2xl bg-brand-50 px-4 py-3 text-left text-sm font-semibold text-brand-700 ring-1 ring-brand-100">
+      🔔 Get an alert when your vulcator accepts or arrives <span class="text-brand-500">Turn on</span>
+    </button>
     <div id="panel" class="space-y-4">
       <div class="rounded-3xl bg-white p-8 text-center text-sm text-gray-400 shadow-sm ring-1 ring-black/5">Loading your request…</div>
     </div>

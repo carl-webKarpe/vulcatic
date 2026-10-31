@@ -25,6 +25,8 @@ function login_user(array $user): void
 function logout_user(): void
 {
     $_SESSION = [];
+    $p = session_get_cookie_params();
+    setcookie(session_name(), '', ['expires' => time() - 3600, 'path' => $p['path'], 'httponly' => true, 'samesite' => 'Lax']);
     session_destroy();
 }
 

@@ -98,7 +98,8 @@ require __DIR__ . '/includes/header.php';
   <?php require __DIR__ . '/includes/auth_aside.php'; ?>
 
   <section class="flex min-h-screen flex-col bg-white md:h-screen md:w-1/2 md:overflow-y-auto">
-    <div class="hero-curve bg-brand-500 px-6 pb-10 pt-10 text-white md:hidden">
+    <div class="hero-curve relative overflow-hidden bg-brand-500 px-6 pb-10 pt-10 text-white md:hidden">
+      <?= logo_full('gecko-pop absolute -bottom-1 right-5 h-28 drop-shadow-[0_6px_10px_rgba(0,0,0,0.25)]') ?>
       <a href="<?= url('index.php') ?>" class="inline-flex items-center gap-2 text-sm text-white/85">
         <svg viewBox="0 0 24 24" class="h-5 w-5" fill="none" stroke="currentColor" stroke-width="2"><path d="M15 18l-6-6 6-6"/></svg> Back
       </a>

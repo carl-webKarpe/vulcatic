@@ -55,7 +55,7 @@
       (coming.length ? 'bg-green-50 text-green-700 ring-1 ring-green-200' : 'bg-amber-50 text-amber-700 ring-1 ring-amber-200');
 
     providers.forEach((p) => {
-      const kind = p.online && p.onsite ? 'vulc' : p.walk_in ? 'shop' : 'off';
+      const kind = p.can_come ? 'vulc' : p.walk_in ? 'shop' : 'off';
       L.marker([p.lat, p.lng], { icon: VMap.icon(kind) })
         .bindPopup(`<b>${esc(p.name)}</b><br>${p.distance_km} km away${p.hours ? '<br>' + esc(p.hours) : ''}`)
         .addTo(layer);
@@ -67,7 +67,7 @@
     }
     list.innerHTML = providers.slice(0, 8).map((p) => `
       <li class="flex items-center gap-3 py-3">
-        <span class="grid h-10 w-10 shrink-0 place-items-center rounded-full text-xs font-bold text-white ${p.online && p.onsite ? 'bg-ink-900' : 'bg-ok-600'}">
+        <span class="grid h-10 w-10 shrink-0 place-items-center rounded-full text-xs font-bold text-white ${p.can_come ? 'bg-ink-900' : p.walk_in ? 'bg-ok-600' : 'bg-gray-400'}">
           ${esc(p.name.split(/\s+/).map((w) => w[0]).slice(0, 2).join('').toUpperCase())}
         </span>
         <div class="min-w-0 flex-1">
@@ -84,16 +84,30 @@
   // Submit the request
   const form = document.getElementById('request-form');
   const errorBox = document.getElementById('request-error');
+  const showError = (msg) => {
+    errorBox.textContent = msg;
+    errorBox.classList.remove('hidden');
+    if (matchMedia('(max-width: 767px)').matches) toast(msg, 'error');
+  };
+
+  // Keep the phone's sticky bar in sync with the chosen service and vehicle.
+  function syncSummary() {
+    const s = form.querySelector('input[name=service_id]:checked')?.closest('label');
+    const v = form.querySelector('input[name=vehicle_type]:checked')?.closest('label');
+    document.getElementById('sticky-service').textContent = s?.querySelector('span')?.textContent.trim() || 'Choose a service';
+    document.getElementById('sticky-meta').textContent = [v?.textContent.trim(), s?.querySelectorAll('span')[1]?.textContent.trim()].filter(Boolean).join(' · ');
+  }
+  form.addEventListener('change', syncSummary);
+  syncSummary();
   form.addEventListener('submit', async (e) => {
     e.preventDefault();
     errorBox.classList.add('hidden');
     if (!haveLocation) {
-      errorBox.textContent = 'Set your location first: tap "Use my location" or tap the map.';
-      errorBox.classList.remove('hidden');
+      showError('Set your location first: tap "Use my location" or tap the map.');
       return;
     }
-    const btn = document.getElementById('request-btn');
-    btn.disabled = true;
+    const btns = [document.getElementById('request-btn'), document.getElementById('sticky-btn')];
+    btns.forEach((b) => (b.disabled = true));
     const fd = new FormData(form);
     const { lat, lng } = me.getLatLng();
     try {
@@ -106,9 +120,8 @@
       });
       location.href = VULCATIC.base + 'job.php?id=' + res.job_id;
     } catch (err) {
-      errorBox.textContent = err.message;
-      errorBox.classList.remove('hidden');
-      btn.disabled = false;
+      showError(err.message);
+      btns.forEach((b) => (b.disabled = false));
     }
   });
 })();

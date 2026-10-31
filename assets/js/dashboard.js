@@ -7,7 +7,7 @@
   const body = document.getElementById('offer-body');
   const timerEl = document.getElementById('offer-timer');
   const errEl = document.getElementById('offer-error');
-  let current = null, countdown, offerMap, offerPin, skipped = new Set();
+  let current = null, countdown, offerMap, offerPin, skipped = new Set(), ringer;
 
   // Share position while online (at most every 20 s).
   let lastSent = 0;
@@ -56,12 +56,15 @@
     };
     tick();
     countdown = setInterval(tick, 1000);
-    try { navigator.vibrate?.([200, 100, 200]); } catch (e) {}
+    Alerts.alert('job', 'New job request nearby!', `${o.service} · ${o.vehicle} · ${o.distance_km} km away`);
+    clearInterval(ringer);
+    ringer = setInterval(() => Alerts.ring('job'), 5000);
   }
 
   function hide(skip) {
     if (skip && current) skipped.add(current.key);
     clearInterval(countdown);
+    clearInterval(ringer);
     current = null;
     modal.classList.add('hidden');
     modal.classList.remove('flex');

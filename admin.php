@@ -249,7 +249,7 @@ $card = 'rounded-2xl bg-white p-5 shadow-sm ring-1 ring-black/5';
                     <button name="action" value="approve" class="rounded-lg bg-ok-500 px-2.5 py-1 text-xs font-semibold text-white hover:bg-ok-600">Approve</button>
                     <button name="action" value="reject" class="rounded-lg px-2.5 py-1 text-xs font-semibold text-red-600 ring-1 ring-red-200 hover:bg-red-50">Reject</button>
                   <?php elseif ($v['is_active']): ?>
-                    <button name="action" value="suspend" data-confirm="Suspend <?= e($v['display_name']) ?>? They won't be able to log in." class="rounded-lg px-2.5 py-1 text-xs font-semibold text-red-600 ring-1 ring-red-200 hover:bg-red-50">Suspend</button>
+                    <button name="action" value="suspend" data-confirm="Suspend <?= e($v['display_name']) ?>? They won't be able to log in." data-confirm-label="Suspend" data-danger class="rounded-lg px-2.5 py-1 text-xs font-semibold text-red-600 ring-1 ring-red-200 hover:bg-red-50">Suspend</button>
                   <?php else: ?>
                     <button name="action" value="reactivate" class="rounded-lg px-2.5 py-1 text-xs font-semibold text-green-700 ring-1 ring-green-300 hover:bg-green-50">Reactivate</button>
                   <?php endif; ?>

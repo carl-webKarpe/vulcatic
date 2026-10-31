@@ -2,3 +2,7 @@ config/config.php
 tailwindcss*
 !tailwind.config.js
 node_modules/
+
+# Session files (contain login state)
+storage/*
+!storage/.htaccess

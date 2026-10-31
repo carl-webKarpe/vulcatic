@@ -100,7 +100,10 @@ require __DIR__ . '/includes/app_header.php';
       </span>
       <div>
         <p class="font-semibold">Waiting for job requests…</p>
-        <p class="text-sm text-gray-500">Keep this page open. New requests near you pop up here.</p>
+        <p class="text-sm text-gray-500">Keep this page open. New requests near you pop up here with a ring.</p>
+        <button type="button" data-enable-alerts="job" class="mt-2 hidden rounded-lg bg-brand-500 px-3 py-1.5 text-xs font-semibold text-white hover:bg-brand-600">
+          🔔 Turn on sound &amp; notifications
+        </button>
       </div>
     </section>
   <?php endif; ?>

@@ -16,7 +16,21 @@ if ($config['app']['debug']) {
 
 date_default_timezone_set('Asia/Manila');
 
+// Stay logged in for 30 days (an installed phone app shouldn't log you out daily).
+// Sessions live in our own folder so the server's cleanup doesn't delete them early.
+const SESSION_DAYS = 30;
+$sessionDir = __DIR__ . '/../storage/sessions';
+if (!is_dir($sessionDir)) @mkdir($sessionDir, 0700, true);
+if (is_dir($sessionDir) && is_writable($sessionDir)) {
+    session_save_path($sessionDir);
+    ini_set('session.gc_maxlifetime', (string) (SESSION_DAYS * 86400));
+    ini_set('session.gc_probability', '1');
+    ini_set('session.gc_divisor', '200');
+}
+session_name('vulcatic');
 session_set_cookie_params([
+    'lifetime' => SESSION_DAYS * 86400,
+    'path'     => '/',
     'httponly' => true,
     'samesite' => 'Lax',
     'secure'   => !empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off',
