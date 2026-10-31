@@ -1,0 +1,53 @@
+<?php
+// Login state and page guards.
+
+function current_user(): ?array
+{
+    static $user = false;
+    if ($user === false) {
+        $user = null;
+        if (!empty($_SESSION['user_id'])) {
+            $stmt = db()->prepare('SELECT id, role, full_name, email, phone, avatar_url
+                                   FROM users WHERE id = ? AND is_active = 1');
+            $stmt->execute([$_SESSION['user_id']]);
+            $user = $stmt->fetch() ?: null;
+        }
+    }
+    return $user;
+}
+
+function login_user(array $user): void
+{
+    session_regenerate_id(true);
+    $_SESSION['user_id'] = $user['id'];
+}
+
+function logout_user(): void
+{
+    $_SESSION = [];
+    session_destroy();
+}
+
+// Where each role lands after logging in.
+function home_for(array $user): string
+{
+    return match ($user['role']) {
+        'provider' => 'dashboard.php',
+        'admin'    => 'admin.php',
+        default    => 'home.php',
+    };
+}
+
+// Put at the top of pages that need a logged-in user, e.g. require_login('provider').
+function require_login(?string $role = null): array
+{
+    $user = current_user();
+    if (!$user) {
+        flash('error', 'Please log in first.');
+        redirect('login.php');
+    }
+    if ($role !== null && $user['role'] !== $role) {
+        redirect(home_for($user));
+    }
+    return $user;
+}

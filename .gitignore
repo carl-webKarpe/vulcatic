@@ -1,0 +1,4 @@
+htdocs/config/config.php
+tailwindcss*
+!tailwind.config.js
+node_modules/

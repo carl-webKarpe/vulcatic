@@ -1,0 +1,26 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Extra styles that are awkward to write with Tailwind classes. */
+
+.flash { animation: flash-in .25s ease-out, flash-out .4s ease-in 4s forwards; }
+@keyframes flash-in  { from { opacity: 0; transform: translateY(-8px); } }
+@keyframes flash-out { to   { opacity: 0; visibility: hidden; } }
+
+/* Orange header with the rounded bottom, like the mockups */
+.hero-curve { border-bottom-left-radius: 2rem; border-bottom-right-radius: 2rem; }
+
+/* Faded map-like background for the auth pages */
+.map-pattern {
+  background-color: #eef0f3;
+  background-image:
+    linear-gradient(90deg, rgba(255,255,255,.9) 6px, transparent 6px),
+    linear-gradient(rgba(255,255,255,.9) 6px, transparent 6px),
+    linear-gradient(90deg, rgba(209,213,219,.5) 1px, transparent 1px),
+    linear-gradient(rgba(209,213,219,.5) 1px, transparent 1px);
+  background-size: 140px 140px, 140px 140px, 28px 28px, 28px 28px;
+}
+
+.role-card:has(input:checked) { border-color: #E8501E; background: #FFF3EE; }
+.role-card:has(input:checked) .role-dot { background: #E8501E; border-color: #E8501E; }
