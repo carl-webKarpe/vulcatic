@@ -381,5 +381,6 @@ $check = '<svg viewBox="0 0 24 24" class="h-5 w-5 shrink-0" fill="none" stroke="
   </div>
 </footer>
 
-<script src="<?= url('assets/js/landing.js') ?>?v=<?= filemtime(__DIR__ . '/assets/js/landing.js') ?>"></script>
-<?php require __DIR__ . '/includes/footer.php'; ?>
+<?php
+$pageScripts = ['landing.js'];
+require __DIR__ . '/includes/footer.php';

@@ -12,7 +12,7 @@ $u = current_user();
     <div class="flex items-center gap-2">
       <form method="post" action="<?= url('logout.php') ?>">
         <?= csrf_field() ?>
-        <button class="rounded-lg px-3 py-2 text-sm font-medium text-gray-500 hover:bg-gray-100">Log out</button>
+        <button class="whitespace-nowrap rounded-lg px-3 py-2 text-sm font-medium text-gray-500 hover:bg-gray-100">Log out</button>
       </form>
       <div class="relative">
         <span class="grid h-12 w-12 place-items-center rounded-full bg-brand-100 text-base font-bold text-brand-700 ring-2 ring-brand-500">

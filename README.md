@@ -9,12 +9,15 @@ when you have no signal.
 ```
 config/              config.example.php -> copy to config.php
 includes/            bootstrap, database, auth, shared layout parts
-assets/              css (built), js, images
+assets/              css (built), js, images, vendor/leaflet (map library)
 index.php            welcome page
 login.php  register.php  logout.php
-home.php             customer home
-dashboard.php        vulcator dashboard (stats, online toggle, recent jobs)
+home.php             customer: live map of nearby help + "Find a vulcator" request
+job.php              customer: track the request, pay, rate
+dashboard.php        vulcator: stats, online toggle, new-job popup
+provider_job.php     vulcator: navigate, job checklist, collect payment, earnings
 admin.php            approve / reject new vulcators
+api/                 JSON endpoints the live pages call every few seconds
 database/            SQL for MySQL Workbench / phpMyAdmin (see database/README.md)
 tailwind/input.css   Tailwind source -> builds assets/css/app.css
 tailwind.config.js
@@ -51,6 +54,27 @@ Test accounts (password `password123`):
 | Admin | `09170000000` |
 
 New vulcators start as **pending**. Log in as admin to approve them before they can go online.
+
+### Try a full job (two browsers)
+
+You need two separate logins at once, so use a normal window **and** an incognito window
+(or two different browsers).
+
+1. **Window A:** log in as Jose (`09174444444`). Make sure he's **Currently online**.
+2. **Window B:** log in as Juan (`09171111111`). Allow location, or tap the map near Jose's
+   pin (the sample vulcators are around Manila, so drag the orange pin there if you're far away).
+   Choose a service and vehicle, then **Find a vulcator**.
+3. **Window A:** the *New job request nearby!* popup appears within a few seconds. **Accept**.
+4. **Window A:** tap **Start navigation**, **I've arrived**, then **Tire fixed**. Window B
+   follows along: accepted, on the way, arrived.
+5. **Window B:** pick **Cash** or **GCash** (enter any 8+ digit reference) and confirm.
+6. **Window A:** **Mark as payment received** to see *Earnings confirmed*.
+7. **Window B:** see *Payment successful*, then rate Jose.
+
+How it works without WebSockets: the pages ask the server for updates every 3–4 seconds
+(`api/job_status.php`, `api/provider_poll.php`). A request goes to the 5 nearest free,
+verified, online vulcators within 5 km. The first to accept gets it. Unanswered requests
+time out after 60 s and are sent again. These numbers are in the `app_settings` table.
 
 ## Changing styles (Tailwind)
 

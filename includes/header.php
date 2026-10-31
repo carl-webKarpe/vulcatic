@@ -8,6 +8,8 @@ $pageTitle = isset($pageTitle) ? $pageTitle . ' · Vulcatic' : 'Vulcatic';
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
   <meta name="theme-color" content="#E8501E">
+  <meta name="csrf-token" content="<?= e(csrf_token()) ?>">
+  <meta name="base-url" content="<?= e(url('')) ?>">
   <title><?= e($pageTitle) ?></title>
   <link rel="icon" href="<?= url('assets/img/favicon.png') ?>" type="image/png">
   <link rel="apple-touch-icon" href="<?= url('assets/img/apple-touch-icon.png') ?>">
@@ -15,6 +17,11 @@ $pageTitle = isset($pageTitle) ? $pageTitle . ' · Vulcatic' : 'Vulcatic';
   <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
   <!-- Built from tailwind/input.css. Rebuild after adding classes (see README). -->
   <link rel="stylesheet" href="<?= url('assets/css/app.css') ?>?v=<?= filemtime(__DIR__ . '/../assets/css/app.css') ?>">
+<?php if (!empty($useMap)): ?>
+  <link rel="stylesheet" href="<?= url('assets/vendor/leaflet/leaflet.css') ?>">
+  <script src="<?= url('assets/vendor/leaflet/leaflet.js') ?>"></script>
+  <script src="<?= url('assets/js/map.js') ?>?v=<?= filemtime(__DIR__ . '/../assets/js/map.js') ?>"></script>
+<?php endif; ?>
 <?= $headExtra ?? '' ?>
 </head>
 <body class="min-h-screen bg-gray-100 font-sans text-gray-900 antialiased <?= e($bodyClass ?? '') ?>">

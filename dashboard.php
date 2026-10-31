@@ -1,10 +1,13 @@
 <?php
 require __DIR__ . '/includes/bootstrap.php';
+require __DIR__ . '/includes/jobs.php';
 $user = require_login('provider');
+$provider = provider_for_user($user['id']);
 
-$stmt = db()->prepare('SELECT * FROM providers WHERE user_id = ?');
-$stmt->execute([$user['id']]);
-$provider = $stmt->fetch();
+// On a job? Go straight to it.
+if ($jobId = active_job_id_for_provider($provider['id'])) {
+    redirect('provider_job.php?id=' . $jobId);
+}
 
 // Availability toggle
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
@@ -14,6 +17,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     } else {
         $online = ($_POST['is_online'] ?? '0') === '1' ? 1 : 0;
         db()->prepare('UPDATE providers SET is_online = ? WHERE id = ?')->execute([$online, $provider['id']]);
+        if (!$online) {
+            db()->prepare("UPDATE job_offers SET status = 'expired' WHERE provider_id = ? AND status = 'pending'")->execute([$provider['id']]);
+        }
         flash('success', $online ? 'You are now online and can receive jobs.' : 'You are now offline.');
     }
     redirect('dashboard.php');
@@ -41,10 +47,11 @@ $greeting  = 'Welcome back, ' . e(first_name($user['full_name'])) . '!';
 $subline   = $isOnline ? 'You are available for jobs' : 'You are offline';
 $statusDot = $isOnline ? 'online' : 'offline';
 $pageTitle = 'Dashboard';
+$useMap    = true;
 require __DIR__ . '/includes/header.php';
 require __DIR__ . '/includes/app_header.php';
 ?>
-<main class="mx-auto max-w-5xl space-y-5 px-5 pb-28 pt-5 md:px-8 md:pb-10">
+<main id="dashboard" data-online="<?= $isOnline ? '1' : '0' ?>" class="mx-auto max-w-5xl space-y-5 px-5 pb-28 pt-5 md:px-8 md:pb-10">
   <?php if ($provider['verification_status'] === 'pending'): ?>
     <p class="rounded-xl bg-amber-50 px-4 py-3 text-sm text-amber-800 ring-1 ring-amber-200">
       <strong>Verification pending.</strong> An admin will review your details. You can go online once you're approved.
@@ -85,6 +92,19 @@ require __DIR__ . '/includes/app_header.php';
     </section>
   </div>
 
+  <?php if ($isOnline): ?>
+    <section id="waiting" class="flex items-center gap-4 rounded-2xl bg-brand-50 p-4 ring-1 ring-brand-100">
+      <span class="relative grid h-12 w-12 shrink-0 place-items-center">
+        <span class="absolute inset-0 animate-ping rounded-full bg-brand-500/30"></span>
+        <img src="<?= url('assets/img/gecko-head.png') ?>" alt="" class="relative h-12 w-12">
+      </span>
+      <div>
+        <p class="font-semibold">Waiting for job requests…</p>
+        <p class="text-sm text-gray-500">Keep this page open. New requests near you pop up here.</p>
+      </div>
+    </section>
+  <?php endif; ?>
+
   <section class="rounded-2xl bg-white p-4 shadow-sm ring-1 ring-black/5">
     <h2 class="mb-3 text-sm font-semibold text-gray-500">Recent jobs</h2>
     <?php if (!$recentJobs): ?>
@@ -111,7 +131,29 @@ require __DIR__ . '/includes/app_header.php';
     <?php endif; ?>
   </section>
 </main>
+<!-- New job request popup (filled by dashboard.js) -->
+<div id="offer-modal" class="fixed inset-0 z-[1000] hidden items-end justify-center bg-ink-900/60 p-3 sm:items-center" role="dialog" aria-modal="true" aria-labelledby="offer-title">
+  <div class="sheet-enter w-full max-w-md overflow-hidden rounded-3xl bg-white shadow-2xl">
+    <div class="h-44 w-full" id="offer-map"></div>
+    <div class="p-5">
+      <div class="flex items-center justify-between">
+        <p id="offer-title" class="flex items-center gap-2 font-bold text-brand-600">
+          <span class="relative flex h-2.5 w-2.5"><span class="absolute h-full w-full animate-ping rounded-full bg-brand-500"></span><span class="relative h-2.5 w-2.5 rounded-full bg-brand-500"></span></span>
+          New job request nearby!
+        </p>
+        <span id="offer-timer" class="rounded-full bg-gray-100 px-2.5 py-1 text-xs font-bold text-gray-600">60s</span>
+      </div>
+      <div id="offer-body" class="mt-4"></div>
+      <p id="offer-error" class="mt-3 hidden text-sm text-red-600"></p>
+      <div class="mt-5 grid grid-cols-2 gap-3">
+        <button id="offer-decline" class="rounded-2xl py-3.5 font-semibold text-red-600 ring-1 ring-red-200 hover:bg-red-50">Decline</button>
+        <button id="offer-accept" class="rounded-2xl bg-ok-500 py-3.5 font-semibold text-white shadow-lg shadow-green-500/30 hover:bg-ok-600">Accept</button>
+      </div>
+    </div>
+  </div>
+</div>
 <?php
-$activeTab = 'home';
+$activeTab   = 'home';
+$pageScripts = ['dashboard.js'];
 require __DIR__ . '/includes/bottom_nav.php';
 require __DIR__ . '/includes/footer.php';
