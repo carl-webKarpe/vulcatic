@@ -18,9 +18,9 @@ return [
 
     'app' => [
         'name'     => 'Vulcatic',
-        // Folder the site lives in, no trailing slash.
-        // XAMPP (htdocs/vulcatic): '/vulcatic'   InfinityFree (htdocs root): ''
-        'base_url' => '/vulcatic',
+        // Leave as 'auto' - the app works out its own folder.
+        // Only set it by hand if links break, e.g. '/vulcatic/htdocs'.
+        'base_url' => 'auto',
         'debug'    => true,   // set to false on InfinityFree
     ],
 ];

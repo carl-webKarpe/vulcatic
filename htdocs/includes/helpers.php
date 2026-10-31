@@ -10,8 +10,19 @@ function e(?string $value): string
 // Build a link inside the app: url('login.php') -> /vulcatic/login.php
 function url(string $path = ''): string
 {
+    return base_url() . '/' . ltrim($path, '/');
+}
+
+// Folder the site is served from, e.g. '/vulcatic/htdocs'.
+// 'auto' works it out from the current page, since every page sits in htdocs/.
+function base_url(): string
+{
     global $config;
-    return $config['app']['base_url'] . '/' . ltrim($path, '/');
+    $base = $config['app']['base_url'] ?? 'auto';
+    if ($base === 'auto') {
+        $base = str_replace('\\', '/', dirname($_SERVER['SCRIPT_NAME']));
+    }
+    return rtrim($base, '/');
 }
 
 function redirect(string $path): never
