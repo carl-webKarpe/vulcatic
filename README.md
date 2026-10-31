@@ -23,6 +23,10 @@ tailwind.config.js
 
 ## Run it locally (XAMPP + MySQL Workbench)
 
+- **MySQL Workbench** is where you build, view and test the database.
+- **XAMPP** only runs the server: MySQL (which Workbench connects to) and Apache
+  (which runs the PHP pages). Workbench cannot run the website by itself.
+
 1. Install [XAMPP](https://www.apachefriends.org/) and start **Apache** and **MySQL**.
 2. Create the database in MySQL Workbench (connect to `localhost`, user `root`,
    no password) by running the files in `database/` in order. See `database/README.md`.
