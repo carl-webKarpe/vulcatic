@@ -1,4 +1,12 @@
 Options -Indexes
+AddType application/manifest+json .webmanifest
+
+# The service worker must never be cached by the browser, so updates reach phones.
+<IfModule mod_headers.c>
+  <Files "sw.js">
+    Header set Cache-Control "no-cache"
+  </Files>
+</IfModule>
 # Always open the PHP app, never a stray index.html
 DirectoryIndex index.php
 

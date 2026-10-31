@@ -72,3 +72,36 @@ function toast(message, type = 'success') {
 
 const peso = (n) => '₱' + Number(n).toLocaleString('en-PH', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 const esc = (s) => String(s ?? '').replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+
+// ---------- Offline mode ----------
+// Register the service worker so the app opens even with no signal.
+if ('serviceWorker' in navigator) {
+  addEventListener('load', () => {
+    navigator.serviceWorker.register(VULCATIC.base + 'sw.js', { scope: VULCATIC.base }).catch(() => {});
+  });
+}
+
+// Show a bar linking to the offline shop finder whenever the signal drops.
+(() => {
+  const bar = document.createElement('a');
+  bar.href = VULCATIC.base + 'offline.html';
+  bar.className = 'fixed inset-x-3 bottom-20 z-[900] hidden items-center justify-between gap-3 rounded-2xl bg-ink-900 px-4 py-3 text-sm font-semibold text-white shadow-2xl md:bottom-4 md:left-auto md:right-4 md:w-96';
+  bar.innerHTML = '<span>📶 You\'re offline. Nearby shops are saved on your phone.</span><span class="shrink-0 text-brand-500">Open →</span>';
+  document.body.appendChild(bar);
+  const update = () => { bar.classList.toggle('hidden', navigator.onLine); bar.classList.toggle('flex', !navigator.onLine); };
+  addEventListener('online', update);
+  addEventListener('offline', update);
+  update();
+})();
+
+// Keep the list of Siargao shops on the phone (refreshed every 6 hours while logged in).
+(async () => {
+  const KEY = 'vulcatic-offline-pack';
+  try {
+    const saved = JSON.parse(localStorage.getItem(KEY) || 'null');
+    if (document.querySelector('meta[name=signed-in]')?.content !== '1') return;
+    if (!navigator.onLine || (saved && Date.now() - new Date(saved.saved_at).getTime() < 6 * 3600 * 1000)) return;
+    const res = await fetch(VULCATIC.base + 'api/offline_pack.php', { headers: { Accept: 'application/json' } });
+    if (res.ok) localStorage.setItem(KEY, JSON.stringify(await res.json()));
+  } catch (e) { /* not logged in or no signal: try again next time */ }
+})();

@@ -1,6 +1,6 @@
 /** Tailwind config for Vulcatic. Rebuild CSS after adding classes (see README). */
 module.exports = {
-  content: ['./*.php', './includes/**/*.php', './assets/js/**/*.js'],
+  content: ['./*.php', './*.html', './includes/**/*.php', './assets/js/**/*.js'],
   theme: {
     extend: {
       fontFamily: { sans: ['Poppins', 'system-ui', 'sans-serif'] },

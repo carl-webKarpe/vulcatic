@@ -7,7 +7,7 @@ move it to **InfinityFree** with **phpMyAdmin**.
 |---|---|---|---|
 | `00_create_database.sql` | Creates the `vulcatic` database | Run | **Skip** (InfinityFree creates it) |
 | `01_schema.sql` | Creates all tables (drops them first) | Run | Import |
-| `02_seed.sql` | Sample users, providers, jobs | Run | Import only for testing |
+| `02_seed.sql` | Sample users, vulcators and two weeks of job history on Siargao | Run | Import only for testing |
 | `03_test_queries.sql` | The queries each screen will use | Run to test | Not needed |
 
 All sample accounts use the password `password123`. Sample vulcators and shops are on

@@ -16,7 +16,12 @@ home.php             customer: live map of nearby help + "Find a vulcator" reque
 job.php              customer: track the request, pay, rate
 dashboard.php        vulcator: stats, online toggle, new-job popup
 provider_job.php     vulcator: navigate, job checklist, collect payment, earnings
-admin.php            approve / reject new vulcators
+history.php          customer: past requests and receipts / vulcator: earnings, chart, ratings
+profile.php          your details and password; vulcators also edit shop, services and prices, GCash, location
+admin.php            admin dashboard: KPIs, requests per day, towns, vulcator management, jobs
+offline.html         shop finder that works with no signal (kept on the phone)
+sw.js                service worker for offline mode
+manifest.webmanifest lets phones install Vulcatic like an app
 api/                 JSON endpoints the live pages call every few seconds
 database/            SQL for MySQL Workbench / phpMyAdmin (see database/README.md)
 tailwind/input.css   Tailwind source -> builds assets/css/app.css
@@ -90,6 +95,31 @@ box around the island. Requests and new vulcators outside Siargao are refused.
 Socorro (Bucas Grande) is left out because it's a separate island. The centres and sample
 locations are approximate, so check them on the map and adjust them in `includes/siargao.php`
 and `database/02_seed.sql`.
+
+## Offline mode
+
+Vulcatic can be installed on a phone (browser menu → **Add to Home Screen**) and keeps working
+with weak or no signal:
+
+- `sw.js` keeps the app's files on the phone. With no signal, opening any page shows
+  `offline.html`, the **Nearby shops** finder.
+- While logged in and online, the list of every approved shop and vulcator on Siargao
+  (`api/offline_pack.php`) is saved on the phone and refreshed every 6 hours.
+- The finder uses the phone's GPS (works without data) to sort shops by distance, with a
+  direction arrow, open/closed status, and **Call / Text** buttons. Calls and SMS often work
+  when mobile data doesn't.
+- Map tiles you've already looked at are kept. Vulcatic never bulk-downloads tiles, because
+  OpenStreetMap's usage policy doesn't allow it.
+
+Offline mode needs `https://` or `localhost`. When you change `offline.html` or the files
+listed at the top of `sw.js`, bump `VERSION` in `sw.js` so phones pick up the new copy.
+
+## Admin dashboard
+
+Log in as admin (`09170000000`) to see, for the last 7, 14 or 30 days:
+requests, completion rate, customer payments, platform earnings, time to accept and to arrive,
+requests per day, a per-town table and map, vulcators (approve, reject, suspend, reactivate),
+and recent jobs filtered by town and status. Suspending a vulcator blocks their login.
 
 ## Changing styles (Tailwind)
 

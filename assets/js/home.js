@@ -42,11 +42,6 @@
       const data = await api(`nearby.php?lat=${lat}&lng=${lng}`);
       if (stamp !== lastFetch) return;
       render(data.providers);
-      // Remember nearby shops for when the signal drops (used by offline mode).
-      try {
-        localStorage.setItem('vulcatic-shops', JSON.stringify({ at: Date.now(), center: [lat, lng],
-          shops: data.providers.filter((p) => p.walk_in) }));
-      } catch (e) {}
     } catch (e) {
       list.innerHTML = `<li class="py-6 text-center text-red-600">${esc(e.message)}</li>`;
     }

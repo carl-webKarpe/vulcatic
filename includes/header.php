@@ -10,9 +10,11 @@ $pageTitle = isset($pageTitle) ? $pageTitle . ' · Vulcatic' : 'Vulcatic';
   <meta name="theme-color" content="#E8501E">
   <meta name="csrf-token" content="<?= e(csrf_token()) ?>">
   <meta name="base-url" content="<?= e(url('')) ?>">
+  <meta name="signed-in" content="<?= current_user() ? '1' : '0' ?>">
   <title><?= e($pageTitle) ?></title>
   <link rel="icon" href="<?= url('assets/img/favicon.png') ?>" type="image/png">
   <link rel="apple-touch-icon" href="<?= url('assets/img/apple-touch-icon.png') ?>">
+  <link rel="manifest" href="<?= url('manifest.webmanifest') ?>">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
   <!-- Built from tailwind/input.css. Rebuild after adding classes (see README). -->
