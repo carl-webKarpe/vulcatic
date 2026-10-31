@@ -23,31 +23,17 @@ $pageTitle = 'Roadside tire help near you';
 $bodyClass = '!bg-white overflow-x-hidden';
 require __DIR__ . '/includes/header.php';
 
-// Inline logo mark, reused in the intro, nav and footer.
-function logo_mark(string $class = 'h-9 w-9'): string
-{
-    return '<svg viewBox="0 0 64 64" class="' . $class . '" aria-hidden="true">
-      <rect width="64" height="64" rx="16" fill="#E8501E"/>
-      <circle cx="32" cy="32" r="18" fill="none" stroke="#fff" stroke-width="6"/>
-      <circle cx="32" cy="32" r="6" fill="#fff"/>
-      <path d="M32 14v6M32 44v6M14 32h6M44 32h6" stroke="#fff" stroke-width="3" stroke-linecap="round"/>
-    </svg>';
-}
-
 $check = '<svg viewBox="0 0 24 24" class="h-5 w-5 shrink-0" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg>';
 ?>
 
 <!-- ============ INTRO: animated logo ============ -->
 <div id="intro" class="intro fixed inset-0 z-[100] grid place-items-center bg-brand-500" aria-hidden="true">
   <div class="flex flex-col items-center">
-    <svg viewBox="0 0 120 120" class="intro-logo h-28 w-28 sm:h-32 sm:w-32">
-      <circle class="intro-ring" cx="60" cy="60" r="40" fill="none" stroke="#fff" stroke-width="11" stroke-linecap="round"/>
-      <g class="intro-spokes" stroke="#fff" stroke-width="5" stroke-linecap="round">
-        <path d="M60 22v11M60 87v11M22 60h11M87 60h11"/>
-      </g>
-      <circle class="intro-hub" cx="60" cy="60" r="11" fill="#fff"/>
-    </svg>
-    <p class="intro-word mt-6 flex overflow-hidden text-4xl font-bold tracking-tight text-white sm:text-5xl">
+    <div class="relative">
+      <img src="<?= url('assets/img/gecko.webp') ?>" alt="" class="intro-gecko relative z-10 h-[34vh] max-h-72 min-h-48 w-auto" width="480" height="741">
+      <span class="intro-shadow absolute -bottom-2 left-1/2 h-4 w-3/4 -translate-x-1/2 rounded-[50%] bg-black/20"></span>
+    </div>
+    <p class="intro-word mt-5 flex overflow-hidden text-4xl font-bold tracking-tight text-white sm:text-5xl">
       <?php foreach (str_split('Vulcatic') as $i => $ch): ?>
         <span style="--i: <?= $i ?>"><?= $ch ?></span>
       <?php endforeach; ?>
@@ -59,8 +45,8 @@ $check = '<svg viewBox="0 0 24 24" class="h-5 w-5 shrink-0" fill="none" stroke="
 <!-- ============ NAV ============ -->
 <header id="nav" class="nav fixed inset-x-0 top-0 z-50 transition-all duration-300">
   <div class="mx-auto flex max-w-6xl items-center justify-between px-5 py-4 md:px-8">
-    <a href="<?= url('index.php') ?>" class="flex items-center gap-2.5">
-      <?= logo_mark('h-9 w-9') ?>
+    <a href="<?= url('index.php') ?>" class="group flex items-center gap-2">
+      <?= logo_img('h-11 w-11 transition group-hover:-rotate-12 group-hover:scale-110') ?>
       <span class="text-xl font-bold tracking-tight">Vulcatic</span>
     </a>
     <nav class="hidden items-center gap-8 text-sm font-medium text-gray-600 md:flex">
@@ -131,10 +117,10 @@ $check = '<svg viewBox="0 0 24 24" class="h-5 w-5 shrink-0" fill="none" stroke="
 
       <!-- Phone with the live rescue animation -->
       <div data-reveal style="--d: 200ms" class="relative mx-auto" data-tilt>
-        <div class="float-chip chip-a absolute -left-6 top-24 z-20 hidden items-center gap-2 rounded-2xl bg-white px-3 py-2 text-xs font-semibold shadow-xl ring-1 ring-black/5 sm:flex" data-depth="-25">
+        <div class="float-chip chip-a absolute -right-6 top-28 z-20 hidden items-center gap-2 rounded-2xl bg-white px-3 py-2 text-xs font-semibold shadow-xl ring-1 ring-black/5 sm:flex" data-depth="-25">
           <span class="grid h-7 w-7 place-items-center rounded-full bg-ok-500/15 text-ok-600"><?= $check ?></span> Tire fixed in 12 min
         </div>
-        <div class="float-chip chip-b absolute -right-8 top-20 z-20 hidden items-center gap-2 rounded-2xl bg-white px-3 py-2 text-xs font-semibold shadow-xl ring-1 ring-black/5 sm:flex" data-depth="-40">
+        <div class="float-chip chip-b absolute -left-10 bottom-40 z-20 hidden items-center gap-2 rounded-2xl bg-white px-3 py-2 text-xs font-semibold shadow-xl ring-1 ring-black/5 sm:flex" data-depth="-40">
           <span class="text-base">★</span> 4.9 · Jose Dela Cruz
         </div>
 
@@ -389,7 +375,7 @@ $check = '<svg viewBox="0 0 24 24" class="h-5 w-5 shrink-0" fill="none" stroke="
 
 <footer class="border-t border-gray-100 py-10">
   <div class="mx-auto flex max-w-6xl flex-col items-center justify-between gap-4 px-5 text-sm text-gray-500 md:flex-row md:px-8">
-    <a href="<?= url('index.php') ?>" class="flex items-center gap-2 font-semibold text-gray-800"><?= logo_mark('h-7 w-7') ?> Vulcatic</a>
+    <a href="<?= url('index.php') ?>" class="flex items-center gap-2 font-semibold text-gray-800"><?= logo_img('h-9 w-9') ?> Vulcatic</a>
     <p>Roadside tire help for travelers, tourists and locals.</p>
     <p>© <?= date('Y') ?> Vulcatic</p>
   </div>

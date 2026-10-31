@@ -82,6 +82,12 @@ function normalize_phone(string $phone): ?string
     return preg_match('/^09\d{9}$/', $digits) ? $digits : null;
 }
 
+// The gecko mascot's head, used as the logo everywhere.
+function logo_img(string $class = 'h-10 w-10'): string
+{
+    return '<img src="' . e(url('assets/img/gecko-head.png')) . '" alt="" class="' . e($class) . ' object-contain" width="256" height="256">';
+}
+
 // "Jose Dela Cruz" -> "JD" for avatar circles.
 function initials(string $name): string
 {

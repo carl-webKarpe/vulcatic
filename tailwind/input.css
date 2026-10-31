@@ -41,15 +41,16 @@ html.js:not(.no-intro) body { overflow: hidden; }
 @keyframes intro-out { to { clip-path: circle(0% at 50% 45%); } }
 .intro { clip-path: circle(150% at 50% 45%); }
 
-.intro-logo { animation: roll-in 1.05s cubic-bezier(.2,.8,.2,1) both; }
-@keyframes roll-in { from { transform: translateX(-60vw) rotate(-720deg); } }
-.intro-ring { stroke-dasharray: 252; stroke-dashoffset: 252; transform: rotate(-90deg); transform-origin: 60px 60px;
-              animation: draw .9s .1s ease-out forwards; }
-@keyframes draw { to { stroke-dashoffset: 0; } }
-.intro-spokes { opacity: 0; transform-origin: 60px 60px; animation: spokes .5s .75s cubic-bezier(.3,1.6,.5,1) forwards; }
-@keyframes spokes { from { opacity: 0; transform: scale(.4) rotate(-90deg); } to { opacity: 1; transform: none; } }
-.intro-hub { transform: scale(0); transform-origin: 60px 60px; animation: pop .45s .9s cubic-bezier(.3,1.8,.5,1) forwards; }
-@keyframes pop { to { transform: scale(1); } }
+.intro-gecko { transform-origin: 50% 100%;
+  animation: gecko-drop .95s cubic-bezier(.3,1.3,.5,1) both, gecko-wave 1.1s .95s ease-in-out; }
+@keyframes gecko-drop {
+  0%   { transform: translateY(-110vh) rotate(-10deg); }
+  65%  { transform: translateY(0) scale(1.1, .88); }
+  82%  { transform: translateY(-14px) scale(.97, 1.04); }
+  100% { transform: none; } }
+@keyframes gecko-wave { 25% { transform: rotate(-5deg); } 50% { transform: rotate(4deg); } 75% { transform: rotate(-2deg); } }
+.intro-shadow { transform: translateX(-50%) scale(0); animation: shadow-in .95s cubic-bezier(.3,1.3,.5,1) forwards; }
+@keyframes shadow-in { 65% { transform: translateX(-50%) scale(1.15); } 100% { transform: translateX(-50%) scale(1); } }
 .intro-word span { display: inline-block; transform: translateY(110%); animation: rise .55s cubic-bezier(.2,.8,.2,1) forwards;
                    animation-delay: calc(1.05s + var(--i) * 45ms); }
 @keyframes rise { to { transform: none; } }

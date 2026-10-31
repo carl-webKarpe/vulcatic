@@ -9,7 +9,8 @@ $pageTitle = isset($pageTitle) ? $pageTitle . ' · Vulcatic' : 'Vulcatic';
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
   <meta name="theme-color" content="#E8501E">
   <title><?= e($pageTitle) ?></title>
-  <link rel="icon" href="<?= url('assets/img/logo.svg') ?>" type="image/svg+xml">
+  <link rel="icon" href="<?= url('assets/img/favicon.png') ?>" type="image/png">
+  <link rel="apple-touch-icon" href="<?= url('assets/img/apple-touch-icon.png') ?>">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
   <!-- Built from tailwind/input.css. Rebuild after adding classes (see README). -->

@@ -3,7 +3,7 @@
   <div class="absolute -right-24 -top-24 h-80 w-80 rounded-full bg-white/10"></div>
   <div class="absolute -bottom-32 -left-20 h-96 w-96 rounded-full bg-black/10"></div>
   <a href="<?= url('index.php') ?>" class="relative flex items-center gap-3">
-    <img src="<?= url('assets/img/logo.svg') ?>" alt="" class="h-11 w-11 rounded-xl ring-2 ring-white/40">
+    <span class="grid h-14 w-14 place-items-center rounded-2xl bg-white shadow-lg"><?= logo_img('h-12 w-12') ?></span>
     <span class="text-2xl font-bold tracking-tight">Vulcatic</span>
   </a>
   <div class="relative max-w-md">
