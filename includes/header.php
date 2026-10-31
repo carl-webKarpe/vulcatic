@@ -1,5 +1,5 @@
 <?php
-// Usage: $pageTitle = 'Login'; $bodyClass = '...'; require 'includes/header.php';
+// Usage: $pageTitle = 'Login'; $bodyClass = '...'; $headExtra = '<script>..</script>'; require 'includes/header.php';
 $pageTitle = isset($pageTitle) ? $pageTitle . ' · Vulcatic' : 'Vulcatic';
 ?>
 <!doctype html>
@@ -14,6 +14,7 @@ $pageTitle = isset($pageTitle) ? $pageTitle . ' · Vulcatic' : 'Vulcatic';
   <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
   <!-- Built from tailwind/input.css. Rebuild after adding classes (see README). -->
   <link rel="stylesheet" href="<?= url('assets/css/app.css') ?>?v=<?= filemtime(__DIR__ . '/../assets/css/app.css') ?>">
+<?= $headExtra ?? '' ?>
 </head>
 <body class="min-h-screen bg-gray-100 font-sans text-gray-900 antialiased <?= e($bodyClass ?? '') ?>">
 <?php foreach (take_flashes() as $f): ?>
