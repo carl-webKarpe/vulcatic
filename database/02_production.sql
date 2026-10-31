@@ -15,6 +15,7 @@ INSERT INTO app_settings (setting_key, setting_value) VALUES
   ('convenience_fee',         '0.00'),
   ('default_search_radius_km','5'),
   ('offer_timeout_seconds',   '60'),
+  ('walkin_offer_timeout_seconds', '300'),
   ('currency',                'PHP');
 
 INSERT INTO services (id, name, description, base_price) VALUES

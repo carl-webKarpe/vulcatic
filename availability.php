@@ -19,4 +19,4 @@ if ($provider['verification_status'] !== 'verified') {
 }
 // Only go back to our own pages.
 $back = basename((string) ($_POST['back'] ?? 'dashboard.php'));
-redirect(in_array($back, ['dashboard.php', 'history.php', 'profile.php', 'shops.php'], true) ? $back : 'dashboard.php');
+redirect(in_array($back, ['dashboard.php', 'bookings.php', 'customers.php', 'team.php', 'history.php', 'profile.php', 'shops.php'], true) ? $back : 'dashboard.php');

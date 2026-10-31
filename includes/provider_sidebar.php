@@ -9,20 +9,32 @@ function provider_sidebar(array $user, string $activeTab): string
     $online = (bool) $p['is_online'];
     $verified = $p['verification_status'] === 'verified';
     $here = basename($_SERVER['SCRIPT_NAME']);
+    $isShop = $p['provider_type'] === 'shop';
+    $stmt = db()->prepare("SELECT
+        (SELECT COUNT(*) FROM jobs WHERE provider_id = ? AND status IN ('accepted','on_the_way','arrived','in_progress','completed')) AS active,
+        (SELECT COUNT(*) FROM job_offers o JOIN jobs j ON j.id = o.job_id WHERE o.provider_id = ? AND o.status = 'pending' AND j.status IN ('searching','matched')) AS incoming");
+    $stmt->execute([$p['id'], $p['id']]);
+    $counts = $stmt->fetch();
+    $badge = (int) $counts['active'] + (int) $counts['incoming'];
     $items = [
         'Work' => array_filter([
-            'home'  => ['Dashboard', 'dashboard.php', NAV_ICONS['home']],
-            'job'   => $jobId ? ['Current job', 'provider_job.php?id=' . $jobId, 'M13 10V3L4 14h7v7l9-11h-7z'] : null,
-            'shops' => ['Nearby shops', 'shops.php', NAV_ICONS['shops']],
+            'home'     => ['Dashboard', 'dashboard.php', NAV_ICONS['home']],
+            'bookings' => ['Bookings', 'bookings.php', NAV_ICONS['bookings']],
+            'job'      => !$isShop && $jobId ? ['Current job', 'provider_job.php?id=' . $jobId, NAV_ICONS['job']] : null,
+            'shops'    => ['Nearby shops', 'shops.php', NAV_ICONS['shops']],
         ]),
-        'Money' => ['history' => ['Earnings & ratings', 'history.php', 'M12 8c-1.7 0-3 .9-3 2s1.3 2 3 2 3 .9 3 2-1.3 2-3 2m0-8c1.1 0 2.1.4 2.6 1M12 8V7m0 1v8m0 0v1m0-1c-1.1 0-2.1-.4-2.6-1M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0z']],
-        'Account' => ['profile' => ['My shop & profile', 'profile.php', NAV_ICONS['profile']]],
+        'Business' => array_filter([
+            'customers' => ['Customers', 'customers.php', NAV_ICONS['customers']],
+            'team'      => $isShop ? ['Team', 'team.php', NAV_ICONS['team']] : null,
+            'history'   => ['Earnings & transactions', 'history.php', 'M12 8c-1.7 0-3 .9-3 2s1.3 2 3 2 3 .9 3 2-1.3 2-3 2m0-8c1.1 0 2.1.4 2.6 1M12 8V7m0 1v8m0 0v1m0-1c-1.1 0-2.1-.4-2.6-1M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0z'],
+        ]),
+        'Account' => ['profile' => [$isShop ? 'Shop profile & services' : 'My profile & services', 'profile.php', NAV_ICONS['profile']]],
     ];
     ob_start(); ?>
     <aside class="fixed inset-y-0 left-0 z-40 hidden w-64 flex-col bg-ink-900 text-white lg:flex" aria-label="Vulcator menu">
       <a href="<?= url('dashboard.php') ?>" class="group flex shrink-0 items-center gap-3 px-5 pb-3 pt-4">
         <?= logo_full('h-12 origin-bottom transition group-hover:-rotate-6') ?>
-        <span><span class="block text-lg font-bold leading-tight">Vulcatic</span><span class="text-xs font-medium text-white/50">Vulcator · <?= e($p['municipality'] ?: 'Siargao') ?></span></span>
+        <span><span class="block text-lg font-bold leading-tight">Vulcatic</span><span class="text-xs font-medium text-white/50"><?= $isShop ? 'Shop' : 'Vulcator' ?> · <?= e($p['municipality'] ?: 'Siargao') ?></span></span>
       </a>
 
       <!-- Availability: always one click away -->
@@ -36,7 +48,7 @@ function provider_sidebar(array $user, string $activeTab): string
           </span>
           <div class="min-w-0 flex-1">
             <p class="text-sm font-bold"><?= $online ? 'You\'re online' : 'You\'re offline' ?></p>
-            <p class="truncate text-xs text-white/60"><?= !$verified ? 'Waiting for approval' : ($online ? 'Getting job requests' : 'Not getting requests') ?></p>
+            <p class="truncate text-xs text-white/60"><?= !$verified ? 'Waiting for approval' : ($online ? 'Roadside requests on' : 'Roadside requests off') ?></p>
           </div>
           <button type="submit" role="switch" aria-checked="<?= $online ? 'true' : 'false' ?>" <?= $verified ? '' : 'disabled' ?>
                   aria-label="<?= $online ? 'Go offline' : 'Go online' ?>"
@@ -57,6 +69,7 @@ function provider_sidebar(array $user, string $activeTab): string
                   <svg viewBox="0 0 24 24" class="h-5 w-5 shrink-0" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="<?= $icon ?>"/></svg>
                   <span class="flex-1"><?= e($label) ?></span>
                   <?php if ($key === 'job'): ?><span class="relative flex h-2.5 w-2.5"><span class="absolute h-full w-full animate-ping rounded-full bg-brand-500"></span><span class="relative h-2.5 w-2.5 rounded-full bg-brand-500"></span></span><?php endif; ?>
+                  <?php if ($key === 'bookings' && $badge): ?><span class="min-w-[1.5rem] rounded-full px-1.5 py-0.5 text-center text-[11px] font-bold <?= $active ? 'bg-ink-900 text-white' : ((int) $counts['incoming'] ? 'bg-amber-400 text-ink-900' : 'bg-white/15 text-white') ?>"><?= $badge ?></span><?php endif; ?>
                 </a></li>
               <?php endforeach; ?>
             </ul>

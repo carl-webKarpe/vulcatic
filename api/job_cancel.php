@@ -1,5 +1,5 @@
 <?php
-// POST {id, reason}  ->  customer cancels before the vulcator arrives.
+// POST {id, reason}  ->  motorist cancels before the repair starts.
 require __DIR__ . '/../includes/api.php';
 require_post();
 $user = api_user('customer');

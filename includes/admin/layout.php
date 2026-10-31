@@ -2,13 +2,14 @@
 // Admin area: sidebar layout and small shared helpers.
 
 const ADMIN_STATUS = [
-    'searching'  => ['Searching', 'bg-amber-50 text-amber-700 ring-amber-200'],
-    'matched'    => ['Waiting for accept', 'bg-amber-50 text-amber-700 ring-amber-200'],
-    'accepted'   => ['Accepted', 'bg-blue-50 text-blue-700 ring-blue-200'],
-    'on_the_way' => ['On the way', 'bg-blue-50 text-blue-700 ring-blue-200'],
-    'arrived'    => ['Arrived', 'bg-blue-50 text-blue-700 ring-blue-200'],
-    'completed'  => ['To pay', 'bg-purple-50 text-purple-700 ring-purple-200'],
-    'paid'       => ['Paid', 'bg-green-50 text-green-700 ring-green-300'],
+    'searching'   => ['Pending', 'bg-amber-50 text-amber-700 ring-amber-200'],
+    'matched'     => ['Pending (offered)', 'bg-amber-50 text-amber-700 ring-amber-200'],
+    'accepted'    => ['Accepted', 'bg-blue-50 text-blue-700 ring-blue-200'],
+    'on_the_way'  => ['En route', 'bg-blue-50 text-blue-700 ring-blue-200'],
+    'arrived'     => ['Arrived', 'bg-blue-50 text-blue-700 ring-blue-200'],
+    'in_progress' => ['In progress', 'bg-purple-50 text-purple-700 ring-purple-200'],
+    'completed'   => ['To pay', 'bg-purple-50 text-purple-700 ring-purple-200'],
+    'paid'        => ['Completed', 'bg-green-50 text-green-700 ring-green-300'],
     'cancelled'  => ['Cancelled', 'bg-gray-100 text-gray-500 ring-gray-200'],
 ];
 
@@ -51,7 +52,7 @@ function admin_counts(): array
     return db()->query("SELECT
         (SELECT COUNT(*) FROM providers WHERE verification_status = 'pending') AS approvals,
         (SELECT COUNT(*) FROM password_reset_requests WHERE status = 'open') AS resets,
-        (SELECT COUNT(*) FROM jobs WHERE status IN ('searching','matched','accepted','on_the_way','arrived','completed')) AS live,
+        (SELECT COUNT(*) FROM jobs WHERE status IN ('searching','matched','accepted','on_the_way','arrived','in_progress','completed')) AS live,
         (SELECT COUNT(*) FROM providers) AS vulcators,
         (SELECT COUNT(*) FROM users WHERE role = 'customer') AS customers,
         (SELECT COUNT(*) FROM ratings WHERE stars <= 3 AND created_at > NOW() - INTERVAL 14 DAY) AS low_reviews")->fetch();

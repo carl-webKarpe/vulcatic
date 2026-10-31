@@ -17,6 +17,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         if (mb_strlen($name) < 2) $errors['full_name'] = 'Enter your full name.';
         if (!$phone) $errors['phone'] = 'Enter a valid PH mobile number, e.g. 09171234567.';
         if ($email !== '' && !filter_var($email, FILTER_VALIDATE_EMAIL)) $errors['email'] = 'Enter a valid email or leave it blank.';
+        $motoristType = array_key_exists($_POST['motorist_type'] ?? '', MOTORIST_TYPES) ? $_POST['motorist_type'] : null;
         if (!$errors) {
             $stmt = db()->prepare('SELECT phone, email FROM users WHERE id <> ? AND (phone = ? OR (email IS NOT NULL AND email = ?))');
             $stmt->execute([$user['id'], $phone, $email]);
@@ -27,6 +28,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         }
         if (!$errors) {
             db()->prepare('UPDATE users SET full_name = ?, phone = ?, email = ? WHERE id = ?')->execute([$name, $phone, $email ?: null, $user['id']]);
+            if ($user['role'] === 'customer') db()->prepare('UPDATE users SET motorist_type = ? WHERE id = ?')->execute([$motoristType, $user['id']]);
             flash('success', 'Your details were saved.');
             redirect('profile.php');
         }
@@ -50,7 +52,17 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $type    = ($_POST['provider_type'] ?? '') === 'shop' ? 'shop' : 'individual';
         $display = trim($_POST['display_name'] ?? '') ?: $user['full_name'];
         $address = trim($_POST['address'] ?? '');
-        $hours   = mb_substr(trim($_POST['opening_hours'] ?? ''), 0, 120) ?: null;
+        // Opening hours from the pickers, saved as "Mon-Sun 7:00-19:00" (the offline shop finder reads this).
+        $days = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
+        $hours = null;
+        if (!empty($_POST['has_hours'])) {
+            $from = in_array($_POST['day_from'] ?? '', $days, true) ? $_POST['day_from'] : 'Mon';
+            $to   = in_array($_POST['day_to'] ?? '', $days, true) ? $_POST['day_to'] : 'Sun';
+            $open = preg_match('/^(\d{1,2}):(\d{2})$/', $_POST['open_time'] ?? '', $o) ? (int) $o[1] . ':' . $o[2] : null;
+            $close = preg_match('/^(\d{1,2}):(\d{2})$/', $_POST['close_time'] ?? '', $c) ? (int) $c[1] . ':' . $c[2] : null;
+            if (!$open || !$close || strtotime($close) <= strtotime($open)) $errors['hours'] = 'Closing time must be after opening time.';
+            else $hours = "$from-$to $open-$close";
+        }
         $gcash   = trim($_POST['gcash_number'] ?? '') === '' ? null : normalize_phone($_POST['gcash_number']);
         $onsite  = isset($_POST['offers_onsite']) ? 1 : 0;
         $walkin  = isset($_POST['accepts_walk_in']) ? 1 : 0;
@@ -131,6 +143,14 @@ require __DIR__ . '/includes/header.php';
 require __DIR__ . '/includes/app_header.php';
 ?>
 <main class="mx-auto grid max-w-6xl gap-5 px-5 pb-28 pt-5 md:grid-cols-2 md:px-8 md:pb-10">
+  <?php if ($isProvider): ?>
+    <!-- Phones: the business pages that don't fit in the bottom tabs -->
+    <nav class="grid grid-cols-3 gap-2 md:col-span-2 lg:hidden" aria-label="Business">
+      <?php foreach (array_filter(['customers.php' => ['Customers', 'customers'], 'team.php' => $provider['provider_type'] === 'shop' ? ['Team', 'team'] : null, 'shops.php' => ['Nearby shops', 'shops']]) as $href => [$t, $ic]): ?>
+        <a href="<?= url($href) ?>" class="flex flex-col items-center gap-1 rounded-2xl bg-white py-3 text-xs font-semibold shadow-sm ring-1 ring-black/5 hover:bg-gray-50"><?= nav_icon($ic, 'h-5 w-5 text-brand-500') ?><?= $t ?></a>
+      <?php endforeach; ?>
+    </nav>
+  <?php endif; ?>
   <div class="space-y-5">
     <form method="post" class="<?= $card ?>" data-once novalidate>
       <?= csrf_field() ?><input type="hidden" name="section" value="account">
@@ -142,6 +162,11 @@ require __DIR__ . '/includes/app_header.php';
           <input id="phone" name="phone" type="tel" value="<?= val('phone', $user['phone'], 'account') ?>" class="<?= $input ?>"><?= err($errors, 'phone') ?></div>
         <div><label class="<?= $label ?>" for="email">Email <span class="font-normal text-gray-400">(optional)</span></label>
           <input id="email" name="email" type="email" value="<?= val('email', $user['email'], 'account') ?>" class="<?= $input ?>"><?= err($errors, 'email') ?></div>
+        <?php if ($user['role'] === 'customer'): $mt = ($_POST['section'] ?? '') === 'account' ? ($_POST['motorist_type'] ?? '') : ($user['motorist_type'] ?? ''); ?>
+          <div><label class="<?= $label ?>" for="motorist_type">I am a…</label>
+            <select id="motorist_type" name="motorist_type" class="<?= $input ?> bg-white"><option value="">Prefer not to say</option>
+              <?php foreach (MOTORIST_TYPES as $v => $t): ?><option value="<?= $v ?>" <?= $mt === $v ? 'selected' : '' ?>><?= e($t) ?></option><?php endforeach; ?></select></div>
+        <?php endif; ?>
       </div>
       <button class="<?= $save ?>">Save details</button>
     </form>
@@ -192,15 +217,36 @@ require __DIR__ . '/includes/app_header.php';
           <input id="display_name" name="display_name" value="<?= val('display_name', $provider['display_name'], 'shop') ?>" class="<?= $input ?>"></div>
         <div><label class="<?= $label ?>" for="address">Address / landmark</label>
           <input id="address" name="address" value="<?= val('address', $provider['address'], 'shop') ?>" class="<?= $input ?>"><?= err($errors, 'address') ?></div>
-        <div><label class="<?= $label ?>" for="opening_hours">Opening hours <span class="font-normal text-gray-400">(shops)</span></label>
-          <input id="opening_hours" name="opening_hours" value="<?= val('opening_hours', $provider['opening_hours'], 'shop') ?>" placeholder="Mon-Sun 7:00-19:00" class="<?= $input ?>"></div>
+        <?php
+          $h = ($_POST['section'] ?? '') === 'shop' ? null : $provider['opening_hours'];
+          preg_match('/^(\w{3})-(\w{3})\s+(\d{1,2}):(\d{2})-(\d{1,2}):(\d{2})$/', (string) $h, $hm);
+          $hasHours = ($_POST['section'] ?? '') === 'shop' ? !empty($_POST['has_hours']) : (bool) $hm;
+          $pad = fn ($hh, $mm) => sprintf('%02d:%s', (int) $hh, $mm);
+          $dFrom = $_POST['day_from'] ?? ($hm[1] ?? 'Mon'); $dTo = $_POST['day_to'] ?? ($hm[2] ?? 'Sun');
+          $tOpen = $_POST['open_time'] ?? ($hm ? $pad($hm[3], $hm[4]) : '07:00'); $tClose = $_POST['close_time'] ?? ($hm ? $pad($hm[5], $hm[6]) : '18:00');
+        ?>
+        <fieldset class="rounded-xl bg-gray-50 p-3">
+          <legend class="sr-only">Operating hours</legend>
+          <label class="flex items-center gap-2 text-sm font-semibold"><input type="checkbox" name="has_hours" value="1" class="h-4 w-4 accent-brand-500" <?= $hasHours ? 'checked' : '' ?>
+            onchange="document.getElementById('hours-fields').classList.toggle('hidden', !this.checked)"> Operating hours</label>
+          <div id="hours-fields" class="mt-3 grid grid-cols-2 gap-2 <?= $hasHours ? '' : 'hidden' ?>">
+            <?php foreach (['day_from' => ['From', $dFrom], 'day_to' => ['To', $dTo]] as $n => [$t, $sel]): ?>
+              <label class="text-xs font-semibold text-gray-500"><?= $t ?>
+                <select name="<?= $n ?>" class="mt-1 block w-full rounded-lg border border-gray-300 bg-white px-2 py-2 text-sm text-gray-900">
+                  <?php foreach (['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'] as $d): ?><option <?= $d === $sel ? 'selected' : '' ?>><?= $d ?></option><?php endforeach; ?></select></label>
+            <?php endforeach; ?>
+            <label class="text-xs font-semibold text-gray-500">Opens<input type="time" name="open_time" value="<?= e($tOpen) ?>" class="mt-1 block w-full rounded-lg border border-gray-300 bg-white px-2 py-2 text-sm text-gray-900"></label>
+            <label class="text-xs font-semibold text-gray-500">Closes<input type="time" name="close_time" value="<?= e($tClose) ?>" class="mt-1 block w-full rounded-lg border border-gray-300 bg-white px-2 py-2 text-sm text-gray-900"></label>
+          </div>
+          <?= err($errors, 'hours') ?>
+        </fieldset>
         <div><label class="<?= $label ?>" for="gcash_number">GCash number <span class="font-normal text-gray-400">(customers pay here)</span></label>
           <input id="gcash_number" name="gcash_number" type="tel" value="<?= val('gcash_number', $provider['gcash_number'], 'shop') ?>" placeholder="09XX XXX XXXX" class="<?= $input ?>"><?= err($errors, 'gcash_number') ?></div>
         <?php $isShopPost = ($_POST['section'] ?? '') === 'shop'; ?>
         <label class="flex items-center gap-2 text-sm"><input type="checkbox" name="offers_onsite" class="h-4 w-4 accent-brand-500"
-          <?= ($isShopPost ? isset($_POST['offers_onsite']) : $provider['offers_onsite']) ? 'checked' : '' ?>> On-site repair (I go to the customer)</label>
+          <?= ($isShopPost ? isset($_POST['offers_onsite']) : $provider['offers_onsite']) ? 'checked' : '' ?>> Roadside assistance (I go to the motorist)</label>
         <label class="flex items-center gap-2 text-sm"><input type="checkbox" name="accepts_walk_in" class="h-4 w-4 accent-brand-500"
-          <?= ($isShopPost ? isset($_POST['accepts_walk_in']) : $provider['accepts_walk_in']) ? 'checked' : '' ?>> Walk-in (customers come to my shop)</label>
+          <?= ($isShopPost ? isset($_POST['accepts_walk_in']) : $provider['accepts_walk_in']) ? 'checked' : '' ?>> Shop visits (motorists come to my shop)</label>
         <?= err($errors, 'mode') ?>
       </div>
       <button class="<?= $save ?>">Save vulcator details</button>

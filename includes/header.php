@@ -28,7 +28,7 @@ $pageTitle = isset($pageTitle) ? $pageTitle . ' · Vulcatic' : 'Vulcatic';
 </head>
 <body class="min-h-screen bg-gray-100 font-sans text-gray-900 antialiased <?= e($bodyClass ?? '') ?>">
 <?php foreach (take_flashes() as $f): ?>
-  <div class="flash fixed inset-x-4 bottom-24 z-[1100] mx-auto max-w-md md:bottom-auto md:top-4 rounded-xl px-4 py-3 text-sm font-medium shadow-lg
+  <div class="flash fixed inset-x-4 bottom-40 z-[1100] mx-auto max-w-md md:bottom-auto md:top-4 rounded-xl px-4 py-3 text-sm font-medium shadow-lg
               <?= $f['type'] === 'error' ? 'bg-red-50 text-red-700 ring-1 ring-red-200' : 'bg-green-50 text-green-700 ring-1 ring-green-200' ?>"
        role="status">
     <?= e($f['message']) ?>

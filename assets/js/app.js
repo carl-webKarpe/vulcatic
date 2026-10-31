@@ -62,7 +62,7 @@ function poll(fn, ms) {
 // Small toast message at the top of the screen.
 function toast(message, type = 'success') {
   const el = document.createElement('div');
-  el.className = 'flash fixed inset-x-4 bottom-24 z-[1100] mx-auto max-w-md md:bottom-auto md:top-4 rounded-xl px-4 py-3 text-sm font-medium shadow-lg ' +
+  el.className = 'flash fixed inset-x-4 bottom-40 z-[1100] mx-auto max-w-md md:bottom-auto md:top-4 rounded-xl px-4 py-3 text-sm font-medium shadow-lg ' +
     (type === 'error' ? 'bg-red-50 text-red-700 ring-1 ring-red-200' : 'bg-green-50 text-green-700 ring-1 ring-green-200');
   el.setAttribute('role', 'status');
   el.textContent = message;
@@ -177,7 +177,8 @@ const Alerts = (() => {
           else { tone(660, 0, 0.15); tone(990, 0.18, 0.3); }
         }
       } catch (e) {}
-      try { navigator.vibrate?.(kind === 'job' ? [300, 120, 300, 120, 300] : [150, 80, 150]); } catch (e) {}
+      // Browsers only allow vibration after the user has tapped the page.
+      try { if (navigator.userActivation?.hasBeenActive) navigator.vibrate?.(kind === 'job' ? [300, 120, 300, 120, 300] : [150, 80, 150]); } catch (e) {}
     },
     // Phone/desktop notification, only when the page isn't on screen.
     notify(title, body) {

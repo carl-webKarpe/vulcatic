@@ -3,7 +3,7 @@
 $q = mb_substr(trim((string) ($_GET['q'] ?? '')), 0, 60);
 $where = "u.role = 'customer'"; $args = [];
 if ($q !== '') { $where .= ' AND (u.full_name LIKE ? OR u.phone LIKE ? OR u.email LIKE ?)'; $like = '%' . $q . '%'; $args = [$like, $like, $like]; }
-$stmt = db()->prepare("SELECT u.id, u.full_name, u.phone, u.email, u.is_active, u.created_at,
+$stmt = db()->prepare("SELECT u.id, u.full_name, u.phone, u.email, u.is_active, u.created_at, u.motorist_type,
                               COUNT(j.id) AS requests, SUM(j.status = 'paid') AS paid, SUM(j.status = 'cancelled') AS cancelled,
                               COALESCE(SUM(CASE WHEN j.status = 'paid' THEN j.total_amount END), 0) AS spent, MAX(j.requested_at) AS last_request
                        FROM users u LEFT JOIN jobs j ON j.customer_id = u.id WHERE $where
@@ -29,7 +29,7 @@ admin_start('customers', 'Customers', count($rows) . ' customer' . (count($rows)
         <?php foreach ($rows as $c): $flag = $c['requests'] >= 3 && $c['cancelled'] / max(1, $c['requests']) >= 0.5; ?>
           <tr>
             <td class="py-2.5"><p class="font-semibold"><?= e($c['full_name']) ?> <?= !$c['is_active'] ? '<span class="ml-1 rounded-full bg-red-50 px-2 py-0.5 text-[11px] font-semibold text-red-700 ring-1 ring-red-200">Suspended</span>' : '' ?></p>
-              <p class="text-xs text-gray-400"><a href="tel:<?= e($c['phone']) ?>" class="hover:text-brand-600"><?= e($c['phone']) ?></a><?= $c['email'] ? ' · ' . e($c['email']) : '' ?></p></td>
+              <p class="text-xs text-gray-400"><?= $c['motorist_type'] ? e(MOTORIST_TYPES[$c['motorist_type']]) . ' · ' : '' ?><a href="tel:<?= e($c['phone']) ?>" class="hover:text-brand-600"><?= e($c['phone']) ?></a><?= $c['email'] ? ' · ' . e($c['email']) : '' ?></p></td>
             <td class="text-gray-600"><?= e(date('M j, Y', strtotime($c['created_at']))) ?></td>
             <td class="text-right tabular-nums"><a href="<?= admin_url(['view' => 'jobs', 'customer' => $c['id'], 'days' => 'all']) ?>" class="hover:text-brand-600"><?= (int) $c['requests'] ?></a></td>
             <td class="text-right tabular-nums <?= $flag ? 'font-semibold text-red-600' : '' ?>" <?= $flag ? 'title="Cancels half or more of their requests"' : '' ?>><?= (int) $c['cancelled'] ?><?= $flag ? ' ⚠️' : '' ?></td>

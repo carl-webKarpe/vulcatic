@@ -59,8 +59,10 @@ Test accounts (password `password123`):
 
 | Role | Login |
 |---|---|
-| Customer | `09171111111` (Juan Cruz) |
-| Vulcator | `09174444444` (Jose Dela Cruz) |
+| Motorist | `09171111111` (Juan Cruz, rental motorbike), `09172222222` (Maria), `09173333333` (Carlo) |
+| Skilled local (vulcator) | `09174444444` (Jose Dela Cruz, General Luna) |
+| Shop owner | `09175555555` (John Doe Vulcanizing, Dapa, with 2 employees) |
+| Shop employee | `09181234500` (Rico Abad, on duty), `09181234501` (Dante Pelaez) |
 | Admin | `09170000000` |
 
 New vulcators start as **pending**. Log in as admin to approve them before they can go online.
@@ -85,6 +87,34 @@ How it works without WebSockets: the pages ask the server for updates every 3–
 (`api/job_status.php`, `api/provider_poll.php`). A request goes to the 5 nearest free,
 verified, online vulcators within the town's search radius. The first to accept gets it. Unanswered requests
 time out after 60 s and are sent again. These numbers are in the `app_settings` table.
+
+## User types and dashboards
+
+| Role | Who | What they get |
+|---|---|---|
+| **Motorist** (`customer`) | Local residents, tourists, motorcycle riders, rental customers, private vehicle owners (chosen at sign-up) | 5-step request, live tracking, chat, payment, rating, history |
+| **Shop owner / skilled local** (`provider`) | Vulcanizing shops and skilled locals | Business dashboard: online switch (roadside availability), Bookings, Customers, Team (shops), Earnings & transactions, profile with operating hours, services and prices, location |
+| **Employee** (`employee`) | Created by a shop owner on the Team page | On-duty switch, assigned jobs (accept/decline), customer location, status updates, chat |
+| **Admin** | Vulcatic staff | Admin dashboard (sidebar) |
+
+### Requesting help (motorists)
+
+1. **Vehicle:** motorcycle, car, or other (tricycle, van, truck, bicycle).
+2. **Location:** GPS, or tap / drag the pin; landmark and extra directions.
+3. **Problem:** flat tire, tire puncture, other tire-related issue (+ details).
+4. **Assistance:** *roadside repair* (sent to the nearest free vulcators who offer that service) or *find a shop to visit* (pick a shop; only that shop gets the booking).
+5. **Review and submit.**
+
+Afterwards the motorist sees the reference number, status, the assigned shop / employee once accepted,
+an ETA **only when the provider enters one**, Call / Text / in-app Chat, and Cancel.
+
+**Booking statuses:** Pending → Accepted → Provider En Route (roadside only) → Arrived →
+Service In Progress → Completed (or Cancelled). A shop visit that the shop doesn't answer within
+5 minutes is cancelled automatically so the motorist can pick another shop.
+
+**Shops with a team:** the owner accepts a booking, then assigns it to an employee (or does it
+themselves). The employee accepts or declines; if they decline, the owner reassigns. Skilled locals
+work alone and take one job at a time; shops can run several at once.
 
 ## Service area: Siargao Island
 

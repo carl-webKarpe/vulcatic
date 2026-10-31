@@ -26,7 +26,7 @@ function admin_jobs_query(array $in, int $limit, int $offset): array
     if ($f['customer']) { $where[] = 'j.customer_id = ?'; $args[] = $f['customer']; }
     if ($f['days'] !== 'all') { $where[] = 'j.requested_at >= CURDATE() - INTERVAL ' . ((int) $f['days'] - 1) . ' DAY'; }
     $where[] = match ($f['status']) {
-        'active'    => "j.status IN ('accepted','on_the_way','arrived','completed')",
+        'active'    => "j.status IN ('accepted','on_the_way','arrived','in_progress','completed')",
         'searching' => "j.status IN ('searching','matched')",
         'paid'      => "j.status = 'paid'",
         'cancelled' => "j.status = 'cancelled'",

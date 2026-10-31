@@ -19,7 +19,7 @@ $stmt->execute([$job['customer_id']]);
 admin_start('job', $d['service'] . ' · ' . $d['customer']['name'],
     '<a href="' . admin_url(['view' => 'jobs']) . '" class="font-semibold text-brand-600">← All jobs</a> · <span class="font-mono">' . e($d['code']) . '</span>', $user,
     status_chip($job['status']));
-$times = [['Requested', $job['requested_at']], ['Accepted', $job['accepted_at']], ['Arrived', $job['arrived_at']], ['Fixed', $job['completed_at']]];
+$times = [['Requested', $job['requested_at']], ['Accepted', $job['accepted_at']], ['Arrived', $job['arrived_at']], ['Repair started', $job['started_at']], ['Completed', $job['completed_at']]];
 ?>
 <div class="grid gap-5 lg:grid-cols-3">
   <div class="space-y-5 lg:col-span-2">
@@ -36,6 +36,7 @@ $times = [['Requested', $job['requested_at']], ['Accepted', $job['accepted_at']]
           <p class="mt-1 font-semibold"><?= e($d['provider']['name']) ?></p>
           <p class="text-sm"><a class="text-brand-600" href="tel:<?= e($d['provider']['phone']) ?>"><?= e($d['provider']['phone']) ?></a> ·
             <a class="text-brand-600" href="<?= admin_url(['view' => 'jobs', 'provider' => $job['provider_id'], 'days' => 'all']) ?>">their jobs</a></p>
+          <?php if ($d['assignee']): ?><p class="text-xs text-gray-500">Done by employee <b><?= e($d['assignee']['name']) ?></b> (<?= e($d['assignee']['status'] ?? '') ?>)</p><?php endif; ?>
         <?php else: ?><p class="mt-1 text-sm text-gray-400">Not assigned</p><?php endif; ?>
       </div>
       <div>
@@ -45,7 +46,9 @@ $times = [['Requested', $job['requested_at']], ['Accepted', $job['accepted_at']]
       </div>
       <div>
         <p class="text-xs font-bold uppercase tracking-wide text-gray-400">Request</p>
-        <p class="mt-1 text-sm"><?= e($d['service']) ?> · <?= e($d['vehicle']) ?></p>
+        <p class="mt-1 text-sm"><?= e($d['problem_label']) ?> · <?= e($d['vehicle']) ?> · <?= $d['mode'] === 'walk_in' ? 'Shop visit' : 'Roadside' ?></p>
+        <?php if ($d['customer']['type']): ?><p class="text-xs text-gray-500"><?= e($d['customer']['type']) ?></p><?php endif; ?>
+        <?php if ($d['directions']): ?><p class="text-sm text-gray-500">Directions: <?= e($d['directions']) ?></p><?php endif; ?>
         <?php if ($d['notes']): ?><p class="text-sm text-gray-500">“<?= e($d['notes']) ?>”</p><?php endif; ?>
       </div>
     </section>
@@ -63,6 +66,18 @@ $times = [['Requested', $job['requested_at']], ['Accepted', $job['accepted_at']]
         <?php if (!$log): ?><li class="text-sm text-gray-400">No events recorded.</li><?php endif; ?>
       </ol>
     </section>
+
+    <?php $chat = job_messages((int) $job['id'], 0); if ($chat): ?>
+      <section class="<?= CARD ?>">
+        <h2 class="mb-3 font-bold">Chat (<?= count($chat) ?>)</h2>
+        <ul class="max-h-72 space-y-2 overflow-y-auto text-sm">
+          <?php foreach ($chat as $m): ?>
+            <li class="flex <?= $m['from_customer'] ? 'justify-start' : 'justify-end' ?>"><span class="max-w-[80%] rounded-2xl px-3 py-2 <?= $m['from_customer'] ? 'bg-gray-100' : 'bg-brand-50' ?>">
+              <?= e($m['body']) ?><span class="mt-0.5 block text-[10px] text-gray-400"><?= e($m['name']) ?> · <?= e($m['time']) ?></span></span></li>
+          <?php endforeach; ?>
+        </ul>
+      </section>
+    <?php endif; ?>
 
     <section class="<?= CARD ?>">
       <h2 class="mb-1 font-bold">Who got the request</h2>

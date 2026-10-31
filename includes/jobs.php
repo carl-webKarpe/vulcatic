@@ -3,19 +3,45 @@
 
 require_once __DIR__ . '/siargao.php';
 //
-// Status flow:
-//   searching   no vulcator has the request right now
-//   matched     sent to nearby vulcators, waiting for one to accept
-//   accepted    a vulcator took the job
-//   on_the_way  vulcator is driving to the customer
-//   arrived     vulcator is with the customer
-//   completed   tire fixed, waiting for payment
-//   paid        payment received (job done)
-//   cancelled   customer cancelled
+// Status flow (what motorists see in brackets):
+//   searching    no vulcator has the request right now      [Pending]
+//   matched      sent to vulcator(s), waiting for an answer  [Pending]
+//   accepted     a shop / vulcator took the job              [Accepted]
+//   on_the_way   driving to the motorist (roadside only)     [Provider En Route]
+//   arrived      with the motorist / motorist at the shop    [Arrived]
+//   in_progress  repair started                               [Service In Progress]
+//   completed    repair done, waiting for payment            [Completed]
+//   paid         payment received                             [Completed]
+//   cancelled                                                 [Cancelled]
+//
+// Two kinds of request (jobs.mode):
+//   onsite   roadside repair: sent to the nearest free vulcators, first to accept wins
+//   walk_in  shop visit: sent only to the shop the motorist picked
+//
+// Shops can have employees: the owner accepts a job, assigns it to an employee
+// (jobs.assigned_user_id), the employee accepts and updates the status.
 
-const JOB_FLOW    = ['searching', 'matched', 'accepted', 'on_the_way', 'arrived', 'completed', 'paid'];
-const JOB_ACTIVE  = ['searching', 'matched', 'accepted', 'on_the_way', 'arrived', 'completed'];
-const JOB_ASSIGNED = ['accepted', 'on_the_way', 'arrived', 'completed'];
+const JOB_FLOW    = ['searching', 'matched', 'accepted', 'on_the_way', 'arrived', 'in_progress', 'completed', 'paid'];
+const JOB_ACTIVE  = ['searching', 'matched', 'accepted', 'on_the_way', 'arrived', 'in_progress', 'completed'];
+const JOB_ASSIGNED = ['accepted', 'on_the_way', 'arrived', 'in_progress', 'completed'];
+
+const STATUS_LABELS = [
+    'searching' => 'Pending', 'matched' => 'Pending', 'accepted' => 'Accepted', 'on_the_way' => 'Provider En Route',
+    'arrived' => 'Arrived', 'in_progress' => 'Service In Progress', 'completed' => 'Completed', 'paid' => 'Completed',
+    'cancelled' => 'Cancelled',
+];
+
+// Step 3 of the request: the problem, and the service it's priced as.
+const PROBLEMS = [
+    'flat_tire' => ['Flat tire', 1],
+    'puncture'  => ['Tire puncture', 2],
+    'other'     => ['Other tire-related issue', 1],
+];
+
+const MOTORIST_TYPES = [
+    'local' => 'Local resident', 'tourist' => 'Tourist', 'rider' => 'Motorcycle rider',
+    'rental' => 'Motorcycle rental customer', 'private_owner' => 'Private vehicle owner',
+];
 
 function setting(string $key, string $default = ''): string
 {
@@ -67,8 +93,8 @@ function find_candidates(array $job, int $limit = 5): array
               AND p.user_id <> ?
               AND NOT EXISTS (SELECT 1 FROM job_offers o WHERE o.job_id = ? AND o.provider_id = p.id
                               AND o.status IN ('pending','declined'))
-              AND NOT EXISTS (SELECT 1 FROM jobs j WHERE j.provider_id = p.id
-                              AND j.status IN ('accepted','on_the_way','arrived','completed'))
+              AND (p.provider_type = 'shop' OR NOT EXISTS (SELECT 1 FROM jobs j WHERE j.provider_id = p.id
+                              AND j.status IN ('accepted','on_the_way','arrived','in_progress','completed')))
             HAVING distance_km <= ?
             ORDER BY distance_km
             LIMIT $limit";
@@ -111,13 +137,82 @@ function maintain_job(array $job): void
 
     db()->prepare("UPDATE job_offers SET status = 'expired'
                    WHERE job_id = ? AND status = 'pending' AND offered_at < NOW() - INTERVAL ? SECOND")
-        ->execute([$job['id'], (int) setting('offer_timeout_seconds', '60')]);
+        ->execute([$job['id'], offer_timeout($job['mode'])]);
 
     $stmt = db()->prepare("SELECT COUNT(*) FROM job_offers WHERE job_id = ? AND status = 'pending'");
     $stmt->execute([$job['id']]);
-    if ((int) $stmt->fetchColumn() === 0) {
-        offer_job($job);
+    if ((int) $stmt->fetchColumn() > 0) return;
+
+    if ($job['mode'] === 'walk_in') {
+        // A shop visit goes to one shop only. If it said no or didn't answer, tell the motorist.
+        $stmt = db()->prepare("SELECT status FROM job_offers WHERE job_id = ? ORDER BY id DESC LIMIT 1");
+        $stmt->execute([$job['id']]);
+        $reason = $stmt->fetchColumn() === 'declined' ? 'The shop can\'t take this booking right now' : 'The shop didn\'t answer in time';
+        db()->prepare("UPDATE jobs SET status = 'cancelled', cancel_reason = ? WHERE id = ? AND status IN ('searching','matched')")
+            ->execute([$reason, $job['id']]);
+        log_status($job['id'], 'cancelled', $reason);
+        return;
     }
+    offer_job($job);
+}
+
+// Seconds a shop / vulcator has to answer: longer for shop visits (they may be busy at the shop).
+function offer_timeout(string $mode): int
+{
+    return $mode === 'walk_in'
+        ? (int) setting('walkin_offer_timeout_seconds', '300')
+        : (int) setting('offer_timeout_seconds', '60');
+}
+
+// Who is looking at a job: 'customer', 'owner' (shop owner / skilled local), 'employee', or null.
+function job_role(array $job, array $user): ?string
+{
+    if ((int) $job['customer_id'] === (int) $user['id']) return 'customer';
+    if ($user['role'] === 'employee' && (int) $job['assigned_user_id'] === (int) $user['id']) return 'employee';
+    if ($user['role'] === 'provider' && $job['provider_id']) {
+        $p = provider_for_user($user['id']);
+        if ($p && (int) $p['id'] === (int) $job['provider_id']) return 'owner';
+    }
+    return null;
+}
+
+// Can this person move the job forward? Owner always; an employee once they accepted the assignment.
+function can_work_job(array $job, ?string $role): bool
+{
+    if ($role === 'owner') return true;
+    return $role === 'employee' && $job['assignment_status'] === 'accepted';
+}
+
+// Minutes left on the ETA the provider gave (null if they didn't give one).
+function eta_left(array $job): ?int
+{
+    if ($job['eta_minutes'] === null || !$job['eta_set_at'] || $job['status'] !== 'on_the_way') return null;
+    $passed = (int) floor((time() - strtotime($job['eta_set_at'])) / 60);
+    return max(1, (int) $job['eta_minutes'] - $passed);
+}
+
+function job_messages(int $jobId, int $viewerId): array
+{
+    $stmt = db()->prepare('SELECT m.id, m.body, m.created_at, m.sender_id, u.full_name, u.role FROM job_messages m
+                           JOIN users u ON u.id = m.sender_id WHERE m.job_id = ? ORDER BY m.id DESC LIMIT 60');
+    $stmt->execute([$jobId]);
+    return array_reverse(array_map(fn ($m) => [
+        'id' => (int) $m['id'], 'body' => $m['body'], 'mine' => (int) $m['sender_id'] === $viewerId,
+        'name' => first_name($m['full_name']), 'from_customer' => $m['role'] === 'customer',
+        'time' => date('g:i A', strtotime($m['created_at'])),
+    ], $stmt->fetchAll()));
+}
+
+// Active employees of a shop.
+function shop_employees(int $providerId, bool $onDutyOnly = false): array
+{
+    $stmt = db()->prepare("SELECT u.id, u.full_name, u.phone, u.on_duty, u.is_active,
+                                  (SELECT COUNT(*) FROM jobs j WHERE j.assigned_user_id = u.id
+                                   AND j.status IN ('accepted','on_the_way','arrived','in_progress','completed')) AS active_jobs
+                           FROM users u WHERE u.role = 'employee' AND u.employer_provider_id = ? AND u.is_active = 1"
+                          . ($onDutyOnly ? ' AND u.on_duty = 1' : '') . ' ORDER BY u.on_duty DESC, u.full_name');
+    $stmt->execute([$providerId]);
+    return $stmt->fetchAll();
 }
 
 function load_job(int $id): ?array
@@ -138,7 +233,7 @@ function provider_for_user(int $userId): ?array
 function active_job_id_for_customer(int $userId): ?int
 {
     $stmt = db()->prepare("SELECT id FROM jobs WHERE customer_id = ?
-                           AND status IN ('searching','matched','accepted','on_the_way','arrived','completed')
+                           AND status IN ('searching','matched','accepted','on_the_way','arrived','in_progress','completed')
                            ORDER BY id DESC LIMIT 1");
     $stmt->execute([$userId]);
     return ($id = $stmt->fetchColumn()) ? (int) $id : null;
@@ -147,7 +242,7 @@ function active_job_id_for_customer(int $userId): ?int
 function active_job_id_for_provider(int $providerId): ?int
 {
     $stmt = db()->prepare("SELECT id FROM jobs WHERE provider_id = ?
-                           AND status IN ('accepted','on_the_way','arrived','completed')
+                           AND status IN ('accepted','on_the_way','arrived','in_progress','completed')
                            ORDER BY id DESC LIMIT 1");
     $stmt->execute([$providerId]);
     return ($id = $stmt->fetchColumn()) ? (int) $id : null;
@@ -159,7 +254,7 @@ function job_payload(array $job): array
     $provider = null;
     if ($job['provider_id']) {
         $stmt = db()->prepare('SELECT p.id, p.display_name, p.provider_type, p.latitude, p.longitude, p.rating_avg,
-                                      p.rating_count, p.gcash_number, u.phone
+                                      p.rating_count, p.gcash_number, p.address, p.opening_hours, u.phone
                                FROM providers p JOIN users u ON u.id = p.user_id WHERE p.id = ?');
         $stmt->execute([$job['provider_id']]);
         if ($p = $stmt->fetch()) {
@@ -175,14 +270,25 @@ function job_payload(array $job): array
                 'phone'        => $p['phone'],
                 'gcash'        => $p['gcash_number'],
                 'distance_km'  => round($km, 2),
-                'eta_min'      => eta_minutes($km),
+                'address'      => $p['address'],
+                'hours'        => $p['opening_hours'],
             ];
         }
     }
 
-    $stmt = db()->prepare('SELECT full_name, phone FROM users WHERE id = ?');
+    $stmt = db()->prepare('SELECT full_name, phone, motorist_type FROM users WHERE id = ?');
     $stmt->execute([$job['customer_id']]);
     $customer = $stmt->fetch();
+
+    $assignee = null;
+    if ($job['assigned_user_id']) {
+        $stmt = db()->prepare('SELECT id, full_name, phone FROM users WHERE id = ?');
+        $stmt->execute([$job['assigned_user_id']]);
+        if ($a = $stmt->fetch()) {
+            $assignee = ['id' => (int) $a['id'], 'name' => $a['full_name'], 'first' => first_name($a['full_name']),
+                         'phone' => $a['phone'], 'status' => $job['assignment_status']];
+        }
+    }
 
     $stmt = db()->prepare('SELECT method, amount, status, reference_no, paid_at FROM payments WHERE job_id = ?');
     $stmt->execute([$job['id']]);
@@ -199,6 +305,15 @@ function job_payload(array $job): array
         'id'          => (int) $job['id'],
         'code'        => $job['job_code'],
         'status'      => $job['status'],
+        'status_label' => STATUS_LABELS[$job['status']] . ($job['status'] === 'completed' ? ' · awaiting payment' : ''),
+        'mode'        => $job['mode'],
+        'problem'     => $job['problem'],
+        'problem_label' => PROBLEMS[$job['problem'] ?? 'other'][0],
+        'directions'  => $job['directions'],
+        'eta_min'     => eta_left($job),
+        'assignee'    => $assignee,
+        // Who the motorist should call: the employee doing the job, else the shop / vulcator.
+        'contact_phone' => $assignee && $job['assignment_status'] === 'accepted' ? $assignee['phone'] : null,
         'step'        => array_search($job['status'], JOB_FLOW, true),
         'service'     => $job['service_name'],
         'vehicle'     => ucfirst($job['vehicle_type']),
@@ -217,7 +332,8 @@ function job_payload(array $job): array
         'pending_offers' => (int) $stmt->fetchColumn(),
         'provider'    => $provider,
         'customer'    => ['name' => $customer['full_name'], 'first' => first_name($customer['full_name']),
-                          'initials' => initials($customer['full_name']), 'phone' => $customer['phone']],
+                          'initials' => initials($customer['full_name']), 'phone' => $customer['phone'],
+                          'type' => MOTORIST_TYPES[$customer['motorist_type'] ?? ''] ?? null],
         'payment'     => $payment ? ['method' => $payment['method'], 'amount' => (float) $payment['amount'],
                                      'status' => $payment['status'], 'reference' => $payment['reference_no']] : null,
         'rated'       => $stars !== false,

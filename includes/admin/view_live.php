@@ -6,11 +6,11 @@ $rows = db()->query("SELECT j.id, j.job_code, j.status, j.municipality, j.addres
                             (SELECT COUNT(*) FROM job_offers o WHERE o.job_id = j.id AND o.status = 'pending') AS pending_offers
                      FROM jobs j JOIN services s ON s.id = j.service_id JOIN users u ON u.id = j.customer_id
                      LEFT JOIN providers p ON p.id = j.provider_id
-                     WHERE j.status IN ('searching','matched','accepted','on_the_way','arrived','completed')
-                     ORDER BY FIELD(j.status, 'searching','matched','completed','arrived','on_the_way','accepted'), j.requested_at")->fetchAll();
+                     WHERE j.status IN ('searching','matched','accepted','on_the_way','arrived','in_progress','completed')
+                     ORDER BY FIELD(j.status, 'searching','matched','completed','in_progress','arrived','on_the_way','accepted'), j.requested_at")->fetchAll();
 $groups = [
     'Looking for a vulcator' => ['searching', 'matched'],
-    'Vulcator assigned'      => ['accepted', 'on_the_way', 'arrived'],
+    'Vulcator assigned'      => ['accepted', 'on_the_way', 'arrived', 'in_progress'],
     'Waiting for payment'    => ['completed'],
 ];
 $headExtra = '<meta http-equiv="refresh" content="20">';

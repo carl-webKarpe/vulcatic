@@ -7,19 +7,22 @@ $lat = filter_var($_GET['lat'] ?? null, FILTER_VALIDATE_FLOAT);
 $lng = filter_var($_GET['lng'] ?? null, FILTER_VALIDATE_FLOAT);
 if (!valid_lat_lng($lat === false ? null : $lat, $lng === false ? null : $lng)) json_error('Location needed.');
 
+$serviceId = (int) ($_GET['service_id'] ?? 1);
 $dist = distance_sql('p.latitude', 'p.longitude');
 $stmt = db()->prepare("SELECT p.id, p.display_name, p.provider_type, p.address, p.latitude, p.longitude,
                               p.is_online, p.offers_onsite, p.accepts_walk_in, p.opening_hours,
-                              p.rating_avg, p.rating_count, $dist AS distance_km
+                              p.rating_avg, p.rating_count, ps.price, $dist AS distance_km
                        FROM providers p
+                       JOIN users u ON u.id = p.user_id AND u.is_active = 1
+                       LEFT JOIN provider_services ps ON ps.provider_id = p.id AND ps.service_id = ?
                        WHERE p.verification_status = 'verified'
                          AND (p.is_online = 1 OR p.accepts_walk_in = 1)
                        HAVING distance_km <= 15
                        ORDER BY distance_km
                        LIMIT 40");
-$stmt->execute([$lat, $lng, $lat]);
+$stmt->execute([$lat, $lng, $lat, $serviceId]);
 
-$radius = (float) setting('default_search_radius_km', '5');
+$radius = search_radius_for(municipality_for($lat, $lng)); // same radius the request will use
 $items = array_map(fn ($p) => [
     'id'        => (int) $p['id'],
     'name'      => $p['display_name'],
@@ -33,8 +36,10 @@ $items = array_map(fn ($p) => [
     'walk_in'   => (bool) $p['accepts_walk_in'],
     'rating'    => (float) $p['rating_avg'],
     'rating_count' => (int) $p['rating_count'],
+    'price'     => $p['price'] === null ? null : (float) $p['price'],
     'distance_km'  => round($p['distance_km'], 2),
-    'can_come'  => $p['is_online'] && $p['offers_onsite'] && $p['distance_km'] <= $radius,
+    // Online, does roadside, close enough, and offers the service for this problem.
+    'can_come'  => $p['is_online'] && $p['offers_onsite'] && $p['distance_km'] <= $radius && $p['price'] !== null,
 ], $stmt->fetchAll());
 
 json_out(['providers' => $items, 'radius_km' => $radius]);

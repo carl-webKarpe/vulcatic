@@ -11,6 +11,7 @@
 SET NAMES utf8mb4;
 SET FOREIGN_KEY_CHECKS = 0;
 
+DROP TABLE IF EXISTS job_messages;
 DROP TABLE IF EXISTS ratings;
 DROP TABLE IF EXISTS payments;
 DROP TABLE IF EXISTS job_status_logs;
@@ -31,20 +32,25 @@ SET FOREIGN_KEY_CHECKS = 1;
 -- ---------------------------------------------------------------------
 CREATE TABLE users (
   id             INT UNSIGNED NOT NULL AUTO_INCREMENT,
-  role           ENUM('customer','provider','admin') NOT NULL DEFAULT 'customer',
+  role           ENUM('customer','provider','employee','admin') NOT NULL DEFAULT 'customer',
+                 -- customer = motorist, provider = shop owner or skilled local, employee = works for a shop
   full_name      VARCHAR(120) NOT NULL,
   email          VARCHAR(160) NULL,
   phone          VARCHAR(20)  NOT NULL,
   password_hash  VARCHAR(255) NOT NULL,          -- PHP password_hash()
   avatar_url     VARCHAR(255) NULL,
   is_active      TINYINT(1)   NOT NULL DEFAULT 1,
+  motorist_type  ENUM('local','tourist','rider','rental','private_owner') NULL,  -- motorists only
+  employer_provider_id INT UNSIGNED NULL,             -- employees: the shop they work for
+  on_duty        TINYINT(1) NOT NULL DEFAULT 0,       -- employees: available for assignments
   must_change_password TINYINT(1) NOT NULL DEFAULT 0,  -- set after an admin password reset
   terms_accepted_at    DATETIME NULL,                  -- agreed to Terms + Privacy Policy
   created_at     DATETIME     NOT NULL DEFAULT CURRENT_TIMESTAMP,
   updated_at     DATETIME     NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
   PRIMARY KEY (id),
   UNIQUE KEY uq_users_phone (phone),
-  UNIQUE KEY uq_users_email (email)
+  UNIQUE KEY uq_users_email (email),
+  KEY idx_users_employer (employer_provider_id)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- ---------------------------------------------------------------------
@@ -113,14 +119,18 @@ CREATE TABLE jobs (
   id                INT UNSIGNED NOT NULL AUTO_INCREMENT,
   job_code          VARCHAR(30) NOT NULL,              -- e.g. VLC-20261031-0041
   customer_id       INT UNSIGNED NOT NULL,
-  provider_id       INT UNSIGNED NULL,                 -- set once accepted
+  provider_id       INT UNSIGNED NULL,                 -- shop or skilled local, set once accepted
+  assigned_user_id  INT UNSIGNED NULL,                 -- shop employee doing the job (NULL = owner / skilled local)
+  assignment_status ENUM('pending','accepted') NULL,   -- employee's answer to the assignment
   service_id        INT UNSIGNED NOT NULL,
   vehicle_type      ENUM('motorcycle','car','tricycle','bicycle','van','truck','other') NOT NULL,
+  problem           ENUM('flat_tire','puncture','other') NULL,
   mode              ENUM('onsite','walk_in') NOT NULL DEFAULT 'onsite',
   customer_lat      DECIMAL(10,7) NOT NULL,
   customer_lng      DECIMAL(10,7) NOT NULL,
   address_text      VARCHAR(255) NULL,                 -- landmark, e.g. "Tourism Road, near Cloud 9"
   municipality      VARCHAR(40) NULL,                  -- Siargao town the request came from
+  directions        VARCHAR(255) NULL,                 -- extra directions from the motorist
   notes             VARCHAR(500) NULL,
   status            ENUM('searching','matched','accepted','on_the_way','arrived',
                          'in_progress','completed','paid','cancelled')
@@ -134,6 +144,9 @@ CREATE TABLE jobs (
   requested_at      DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
   accepted_at       DATETIME NULL,
   arrived_at        DATETIME NULL,
+  started_at        DATETIME NULL,                     -- service in progress
+  eta_minutes       SMALLINT UNSIGNED NULL,            -- only when the provider gives one
+  eta_set_at        DATETIME NULL,
   completed_at      DATETIME NULL,
   updated_at        DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
   PRIMARY KEY (id),
@@ -142,8 +155,10 @@ CREATE TABLE jobs (
   KEY idx_jobs_provider (provider_id, status, completed_at),
   KEY idx_jobs_status (status),
   KEY idx_jobs_municipality (municipality),
+  KEY idx_jobs_assigned (assigned_user_id, status),
   CONSTRAINT fk_jobs_customer FOREIGN KEY (customer_id) REFERENCES users (id),
   CONSTRAINT fk_jobs_provider FOREIGN KEY (provider_id) REFERENCES providers (id) ON DELETE SET NULL,
+  CONSTRAINT fk_jobs_assigned FOREIGN KEY (assigned_user_id) REFERENCES users (id) ON DELETE SET NULL,
   CONSTRAINT fk_jobs_service  FOREIGN KEY (service_id)  REFERENCES services (id)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
@@ -255,3 +270,21 @@ CREATE TABLE login_attempts (
   KEY idx_attempts_login (login, attempted_at),
   KEY idx_attempts_ip (ip, attempted_at)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- ---------------------------------------------------------------------
+-- job_messages: in-app chat between the motorist and the shop/provider
+-- ---------------------------------------------------------------------
+CREATE TABLE job_messages (
+  id          INT UNSIGNED NOT NULL AUTO_INCREMENT,
+  job_id      INT UNSIGNED NOT NULL,
+  sender_id   INT UNSIGNED NOT NULL,
+  body        VARCHAR(500) NOT NULL,
+  created_at  DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  PRIMARY KEY (id),
+  KEY idx_messages_job (job_id, id),
+  CONSTRAINT fk_messages_job    FOREIGN KEY (job_id)    REFERENCES jobs (id)  ON DELETE CASCADE,
+  CONSTRAINT fk_messages_sender FOREIGN KEY (sender_id) REFERENCES users (id) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- Employees belong to a shop (added here because providers is created after users)
+ALTER TABLE users ADD CONSTRAINT fk_users_employer FOREIGN KEY (employer_provider_id) REFERENCES providers (id) ON DELETE SET NULL;

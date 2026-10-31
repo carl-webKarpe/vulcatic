@@ -19,6 +19,7 @@ $stmt = db()->prepare("SELECT p.id, p.display_name, p.provider_type, p.municipal
                               (SELECT COUNT(*) FROM jobs j WHERE j.provider_id = p.id AND j.status = 'paid') AS jobs,
                               (SELECT COALESCE(SUM(provider_earning), 0) FROM jobs j WHERE j.provider_id = p.id AND j.status = 'paid') AS earned,
                               (SELECT COUNT(*) FROM job_offers o WHERE o.provider_id = p.id) AS offers,
+                              (SELECT COUNT(*) FROM users e WHERE e.role = 'employee' AND e.employer_provider_id = p.id AND e.is_active = 1) AS team,
                               (SELECT COUNT(*) FROM job_offers o WHERE o.provider_id = p.id AND o.status = 'accepted') AS accepted
                        FROM providers p JOIN users u ON u.id = p.user_id WHERE " . implode(' AND ', $where) . "
                        ORDER BY FIELD(p.verification_status, 'pending', 'verified', 'rejected'), p.is_online DESC, p.municipality, p.display_name");
@@ -54,7 +55,7 @@ admin_start('vulcators', 'Vulcators', count($rows) . ' shown · approve, suspend
                   : ($v['is_online'] ? ['Online', 'bg-green-50 text-green-700 ring-green-300'] : ['Offline', 'bg-gray-100 text-gray-600 ring-gray-200']))); ?>
           <tr>
             <td class="py-2.5"><p class="font-semibold"><?= e($v['display_name']) ?></p>
-              <p class="text-xs text-gray-400"><?= $v['provider_type'] === 'shop' ? 'Shop' : 'Skilled local' ?> · <a href="tel:<?= e($v['phone']) ?>" class="hover:text-brand-600"><?= e($v['phone']) ?></a>
+              <p class="text-xs text-gray-400"><?= $v['provider_type'] === 'shop' ? 'Shop' . ($v['team'] ? ' · ' . (int) $v['team'] . ' employee' . ($v['team'] > 1 ? 's' : '') : '') : 'Skilled local' ?> · <a href="tel:<?= e($v['phone']) ?>" class="hover:text-brand-600"><?= e($v['phone']) ?></a>
                 · <?= implode(' + ', array_filter([$v['offers_onsite'] ? 'on-site' : '', $v['accepts_walk_in'] ? 'walk-in' : ''])) ?></p></td>
             <td><?= e($v['municipality'] ?: '–') ?></td>
             <td><span class="rounded-full px-2 py-0.5 text-xs font-semibold ring-1 <?= $state[1] ?>"><?= $state[0] ?></span>

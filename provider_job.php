@@ -1,27 +1,30 @@
 <?php
 require __DIR__ . '/includes/bootstrap.php';
 require __DIR__ . '/includes/jobs.php';
-$user = require_login('provider');
-$provider = provider_for_user($user['id']);
-
-$job = load_job((int) ($_GET['id'] ?? 0));
-if (!$job || (int) $job['provider_id'] !== (int) $provider['id']) {
+$user = require_login();
+// Shop owners / skilled locals and the employee assigned to the job can open it.
+$job  = load_job((int) ($_GET['id'] ?? 0));
+$role = $job ? job_role($job, $user) : null;
+$home = $user['role'] === 'employee' ? 'employee.php' : 'dashboard.php';
+if (!in_array($role, ['owner', 'employee'], true)) {
     flash('error', 'Job not found.');
-    redirect('dashboard.php');
+    redirect($user['role'] === 'customer' ? 'home.php' : $home);
 }
+$provider = $role === 'owner' ? provider_for_user($user['id']) : null;
 
-$greeting  = 'Welcome back, ' . e(first_name($user['full_name'])) . '!';
+$greeting  = e(STATUS_LABELS[$job['status']]) . ' · ' . ($job['mode'] === 'walk_in' ? 'Shop visit' : 'Roadside');
 $subline   = 'Job ' . $job['job_code'];
-$statusDot = 'online';
+$statusDot = $user['role'] === 'provider' ? ($provider['is_online'] ? 'online' : 'offline') : null;
 $pageTitle = 'Current job';
 $activeTab = 'job';
 $useMap    = true;
 require __DIR__ . '/includes/header.php';
 require __DIR__ . '/includes/app_header.php';
 ?>
-<main id="pjob" data-job-id="<?= (int) $job['id'] ?>" data-gecko="<?= e(url('assets/img/gecko.webp')) ?>"
+<main id="pjob" data-job-id="<?= (int) $job['id'] ?>" data-gecko="<?= e(url('assets/img/gecko.webp')) ?>" data-home="<?= $home ?>"
+      data-shares-location="<?= $provider && $provider['provider_type'] === 'individual' ? '1' : '0' ?>"
       class="mx-auto max-w-6xl md:grid md:grid-cols-[1fr_420px] md:gap-6 md:px-8 md:py-6">
-  <section class="relative h-[40vh] md:h-[calc(100vh-8.5rem)] md:overflow-hidden md:rounded-3xl md:ring-1 md:ring-black/5">
+  <section class="relative isolate h-[40vh] md:h-[calc(100vh-8.5rem)] md:overflow-hidden md:rounded-3xl md:ring-1 md:ring-black/5">
     <div id="map" class="h-full w-full"></div>
     <a id="directions" target="_blank" rel="noopener"
        class="absolute left-3 top-3 z-[500] hidden items-center gap-2 rounded-xl bg-white px-3 py-2 text-sm font-semibold shadow-lg ring-1 ring-black/5 hover:bg-gray-50">

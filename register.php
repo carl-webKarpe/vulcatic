@@ -18,7 +18,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $password = $_POST['password'] ?? '';
     $confirm  = $_POST['password_confirm'] ?? '';
 
+    $motoristType = array_key_exists($_POST['motorist_type'] ?? '', MOTORIST_TYPES) ? $_POST['motorist_type'] : null;
     if (mb_strlen($fullName) < 2)  $errors['full_name'] = 'Enter your full name.';
+    if ($role === 'customer' && !$motoristType) $errors['motorist_type'] = 'Tell us which describes you best.';
     if (!$phone)                   $errors['phone'] = 'Enter a valid PH mobile number, e.g. 09171234567.';
     if ($email !== '' && !filter_var($email, FILTER_VALIDATE_EMAIL)) $errors['email'] = 'Enter a valid email or leave it blank.';
     if (empty($_POST['terms']))    $errors['terms'] = 'Please agree to the Terms of Use and Privacy Policy to continue.';
@@ -62,8 +64,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $pdo = db();
         $pdo->beginTransaction();
         try {
-            $stmt = $pdo->prepare('INSERT INTO users (role, full_name, email, phone, password_hash, terms_accepted_at) VALUES (?, ?, ?, ?, ?, NOW())');
-            $stmt->execute([$role, $fullName, $email ?: null, $phone, password_hash($password, PASSWORD_DEFAULT)]);
+            $stmt = $pdo->prepare('INSERT INTO users (role, full_name, email, phone, password_hash, motorist_type, terms_accepted_at) VALUES (?, ?, ?, ?, ?, ?, NOW())');
+            $stmt->execute([$role, $fullName, $email ?: null, $phone, password_hash($password, PASSWORD_DEFAULT), $role === 'customer' ? $motoristType : null]);
             $userId = (int) $pdo->lastInsertId();
 
             if ($role === 'provider') {
@@ -146,6 +148,16 @@ require __DIR__ . '/includes/header.php';
         </div>
 
         <!-- Vulcator details (shown when "Fix tires" is selected) -->
+        <!-- Motorists: who they are (helps shops, e.g. tourists may need directions) -->
+        <div id="motorist-fields" class="<?= $role === 'customer' ? '' : 'hidden' ?>">
+          <label for="motorist_type" class="mb-1 block text-sm font-medium">I am a…</label>
+          <select id="motorist_type" name="motorist_type" class="<?= $input ?> bg-white">
+            <option value="">Choose one</option>
+            <?php foreach (MOTORIST_TYPES as $v => $t): ?><option value="<?= $v ?>" <?= ($_POST['motorist_type'] ?? '') === $v ? 'selected' : '' ?>><?= e($t) ?></option><?php endforeach; ?>
+          </select>
+          <?= field_error($errors, 'motorist_type') ?>
+        </div>
+
         <div id="provider-fields" class="space-y-4 rounded-2xl bg-gray-50 p-4 ring-1 ring-gray-200 <?= $role === 'provider' ? '' : 'hidden' ?>">
           <p class="text-sm font-semibold">Vulcator details</p>
 
@@ -238,7 +250,10 @@ require __DIR__ . '/includes/header.php';
   // Show vulcator fields only for the "Fix tires" role.
   const providerFields = document.getElementById('provider-fields');
   document.querySelectorAll('input[name=role]').forEach((r) =>
-    r.addEventListener('change', () => providerFields.classList.toggle('hidden', r.value !== 'provider' || !r.checked)));
+    r.addEventListener('change', () => {
+      providerFields.classList.toggle('hidden', r.value !== 'provider' || !r.checked);
+      document.getElementById('motorist-fields').classList.toggle('hidden', r.value !== 'customer' || !r.checked);
+    }));
 
   // Fill latitude/longitude from the phone's GPS.
   document.getElementById('locate-btn').addEventListener('click', () => {

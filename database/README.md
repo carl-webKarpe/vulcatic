@@ -29,6 +29,9 @@ Running `01_schema.sql` again wipes the tables, so you can always start fresh.
 
 ## After a `git pull`
 
+(The latest update added user types, shop employees, provider ETA and chat; `04_upgrade.sql` adds those too.)
+
+
 If a page shows *Unknown column* or *Table … doesn't exist*, your database is older than the code.
 Run `04_upgrade.sql`: it adds whatever is missing and keeps your data. The last result should say **OK** on every row.
 

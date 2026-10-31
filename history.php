@@ -4,16 +4,18 @@ require __DIR__ . '/includes/jobs.php';
 require __DIR__ . '/includes/charts.php';
 $user = require_login();
 if ($user['role'] === 'admin') redirect('admin.php');
+if ($user['role'] === 'employee') redirect('employee.php');
 
 $isProvider = $user['role'] === 'provider';
 $statusLabel = [
-    'searching' => ['Searching', 'bg-amber-50 text-amber-700 ring-amber-200'],
-    'matched'   => ['Searching', 'bg-amber-50 text-amber-700 ring-amber-200'],
-    'accepted'  => ['Accepted', 'bg-blue-50 text-blue-700 ring-blue-200'],
-    'on_the_way'=> ['On the way', 'bg-blue-50 text-blue-700 ring-blue-200'],
-    'arrived'   => ['Arrived', 'bg-blue-50 text-blue-700 ring-blue-200'],
-    'completed' => ['To pay', 'bg-amber-50 text-amber-700 ring-amber-200'],
-    'paid'      => ['Done', 'bg-green-50 text-green-700 ring-green-300'],
+    'searching'   => ['Pending', 'bg-amber-50 text-amber-700 ring-amber-200'],
+    'matched'     => ['Pending', 'bg-amber-50 text-amber-700 ring-amber-200'],
+    'accepted'    => ['Accepted', 'bg-blue-50 text-blue-700 ring-blue-200'],
+    'on_the_way'  => ['En route', 'bg-blue-50 text-blue-700 ring-blue-200'],
+    'arrived'     => ['Arrived', 'bg-blue-50 text-blue-700 ring-blue-200'],
+    'in_progress' => ['In progress', 'bg-purple-50 text-purple-700 ring-purple-200'],
+    'completed'   => ['To pay', 'bg-amber-50 text-amber-700 ring-amber-200'],
+    'paid'        => ['Completed', 'bg-green-50 text-green-700 ring-green-300'],
     'cancelled' => ['Cancelled', 'bg-gray-100 text-gray-500 ring-gray-200'],
 ];
 
@@ -39,8 +41,9 @@ if ($isProvider) {
     foreach ($stmt->fetchAll() as $r) $byDay[$r['d']] = (float) $r['s'];
 
     $stmt = db()->prepare('SELECT j.id, j.job_code, j.status, j.vehicle_type, j.municipality, j.provider_earning AS amount,
-                                  j.requested_at, s.name AS service, u.full_name AS other
+                                  j.requested_at, s.name AS service, u.full_name AS other, e.full_name AS done_by
                            FROM jobs j JOIN services s ON s.id = j.service_id JOIN users u ON u.id = j.customer_id
+                           LEFT JOIN users e ON e.id = j.assigned_user_id
                            WHERE j.provider_id = ? ORDER BY j.requested_at DESC LIMIT 50');
     $stmt->execute([$pid]);
     $jobs = $stmt->fetchAll();
@@ -127,7 +130,7 @@ require __DIR__ . '/includes/app_header.php';
               <span class="grid h-10 w-10 shrink-0 place-items-center rounded-full bg-gray-100 text-xs font-bold text-gray-600"><?= e($j['other'] ? initials($j['other']) : '?') ?></span>
               <div class="min-w-0 flex-1">
                 <p class="truncate font-semibold"><?= e($j['service']) ?><?= $j['other'] ? ' · ' . e($j['other']) : '' ?></p>
-                <p class="truncate text-xs text-gray-500"><?= e(date('M j, g:i A', strtotime($j['requested_at']))) ?><?= $j['municipality'] ? ' · ' . e($j['municipality']) : '' ?> · <?= e(ucfirst($j['vehicle_type'])) ?></p>
+                <p class="truncate text-xs text-gray-500"><?= e(date('M j, g:i A', strtotime($j['requested_at']))) ?><?= $j['municipality'] ? ' · ' . e($j['municipality']) : '' ?> · <?= e(ucfirst($j['vehicle_type'])) ?><?= !empty($j['done_by']) ? ' · by ' . e(first_name($j['done_by'])) : '' ?></p>
               </div>
               <div class="shrink-0 text-right">
                 <p class="text-sm font-bold <?= $j['status'] === 'cancelled' ? 'text-gray-400 line-through' : '' ?>"><?= e(peso((float) $j['amount'])) ?></p>

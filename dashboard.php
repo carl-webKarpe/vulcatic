@@ -6,8 +6,8 @@ $user = require_login('provider');
 $provider = provider_for_user($user['id']);
 $pid = $provider['id'];
 
-// On a job? Go straight to it.
-if ($jobId = active_job_id_for_provider($pid)) {
+// Skilled locals work one job at a time: go straight to it. Shops use Bookings.
+if ($provider['provider_type'] !== 'shop' && ($jobId = active_job_id_for_provider($pid))) {
     redirect('provider_job.php?id=' . $jobId);
 }
 
@@ -65,12 +65,13 @@ require __DIR__ . '/includes/header.php';
 require __DIR__ . '/includes/app_header.php';
 $card = 'rounded-2xl bg-white p-5 shadow-sm ring-1 ring-black/5';
 ?>
-<main id="dashboard" data-online="<?= $isOnline ? '1' : '0' ?>" class="mx-auto max-w-6xl space-y-5 px-5 pb-28 pt-5 md:px-8 md:pb-10">
+<main id="dashboard" data-offer-listener data-online="<?= $isOnline ? '1' : '0' ?>" data-walkin="<?= $verified && $provider['accepts_walk_in'] ? '1' : '0' ?>"
+      data-shares-location="<?= $provider['provider_type'] === 'individual' ? '1' : '0' ?>" class="mx-auto max-w-6xl space-y-5 px-5 pb-28 pt-5 md:px-8 md:pb-10">
 
   <!-- Status -->
   <?php if (!$verified): ?>
     <section class="flex flex-col gap-4 rounded-3xl bg-amber-50 p-5 ring-1 ring-amber-200 sm:flex-row sm:items-center">
-      <?= logo_full('h-20 shrink-0') ?>
+      <?= logo_full('h-20 shrink-0 self-start') ?>
       <div><p class="text-lg font-bold text-amber-900"><?= $provider['verification_status'] === 'rejected' ? 'Your application was not approved' : 'Almost there! We\'re checking your details' ?></p>
         <p class="text-sm text-amber-800"><?= $provider['verification_status'] === 'rejected' ? 'Please contact Vulcatic support.' : 'An admin may call you to confirm. Meanwhile, set your services, prices and GCash number so you\'re ready.' ?></p></div>
     </section>
@@ -97,7 +98,7 @@ $card = 'rounded-2xl bg-white p-5 shadow-sm ring-1 ring-black/5';
     <section class="relative overflow-hidden rounded-3xl bg-ink-900 p-5 text-white sm:p-6">
       <div class="absolute -right-10 -top-10 h-40 w-40 rounded-full bg-white/5"></div>
       <div class="relative flex flex-col gap-4 sm:flex-row sm:items-center">
-        <?= logo_full('h-20 shrink-0') ?>
+        <?= logo_full('h-20 shrink-0 self-start') ?>
         <div class="flex-1">
           <p class="text-xl font-bold">You're offline</p>
           <p class="text-sm text-white/70">Go online when you're ready to fix tires. Customers within <?= e((string) $radius) ?> km<?= $provider['municipality'] ? ' of ' . e($provider['municipality']) : '' ?> can then reach you.</p>
@@ -177,27 +178,7 @@ $card = 'rounded-2xl bg-white p-5 shadow-sm ring-1 ring-black/5';
   </div>
 </main>
 
-<!-- New job request popup (filled by dashboard.js) -->
-<div id="offer-modal" class="fixed inset-0 z-[1000] hidden items-end justify-center bg-ink-900/60 p-3 sm:items-center" role="dialog" aria-modal="true" aria-labelledby="offer-title">
-  <div class="sheet-enter w-full max-w-md overflow-hidden rounded-3xl bg-white shadow-2xl">
-    <div class="h-44 w-full" id="offer-map"></div>
-    <div class="p-5">
-      <div class="flex items-center justify-between">
-        <p id="offer-title" class="flex items-center gap-2 font-bold text-brand-600">
-          <span class="relative flex h-2.5 w-2.5"><span class="absolute h-full w-full animate-ping rounded-full bg-brand-500"></span><span class="relative h-2.5 w-2.5 rounded-full bg-brand-500"></span></span>
-          New job request nearby!
-        </p>
-        <span id="offer-timer" class="rounded-full bg-gray-100 px-2.5 py-1 text-xs font-bold text-gray-600">60s</span>
-      </div>
-      <div id="offer-body" class="mt-4"></div>
-      <p id="offer-error" class="mt-3 hidden text-sm text-red-600"></p>
-      <div class="mt-5 grid grid-cols-2 gap-3">
-        <button id="offer-decline" class="rounded-2xl py-3.5 font-semibold text-red-600 ring-1 ring-red-200 hover:bg-red-50">Decline</button>
-        <button id="offer-accept" class="rounded-2xl bg-ok-500 py-3.5 font-semibold text-white shadow-lg shadow-green-500/30 hover:bg-ok-600">Accept</button>
-      </div>
-    </div>
-  </div>
-</div>
+<?php require __DIR__ . '/includes/offer_modal.php'; ?>
 <?php
 $activeTab   = 'home';
 $pageScripts = ['dashboard.js'];

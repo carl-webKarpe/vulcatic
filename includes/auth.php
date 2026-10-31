@@ -7,7 +7,7 @@ function current_user(): ?array
     if ($user === false) {
         $user = null;
         if (!empty($_SESSION['user_id'])) {
-            $stmt = db()->prepare('SELECT id, role, full_name, email, phone, avatar_url, must_change_password
+            $stmt = db()->prepare('SELECT id, role, full_name, email, phone, avatar_url, must_change_password, motorist_type, employer_provider_id, on_duty
                                    FROM users WHERE id = ? AND is_active = 1');
             $stmt->execute([$_SESSION['user_id']]);
             $user = $stmt->fetch() ?: null;
@@ -36,6 +36,7 @@ function home_for(array $user): string
     return match ($user['role']) {
         'provider' => 'dashboard.php',
         'admin'    => 'admin.php',
+        'employee' => 'employee.php',
         default    => 'home.php',
     };
 }

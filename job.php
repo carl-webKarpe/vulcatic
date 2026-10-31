@@ -18,7 +18,7 @@ require __DIR__ . '/includes/app_header.php';
 ?>
 <main id="job" data-job-id="<?= (int) $job['id'] ?>" data-gecko="<?= e(url('assets/img/gecko.webp')) ?>"
       class="mx-auto max-w-6xl md:grid md:grid-cols-[1fr_420px] md:gap-6 md:px-8 md:py-6">
-  <section class="relative h-[40vh] md:h-[calc(100vh-8.5rem)] md:overflow-hidden md:rounded-3xl md:ring-1 md:ring-black/5">
+  <section class="relative isolate h-[40vh] md:h-[calc(100vh-8.5rem)] md:overflow-hidden md:rounded-3xl md:ring-1 md:ring-black/5">
     <div id="map" class="h-full w-full"></div>
   </section>
   <section class="px-5 pb-28 pt-5 md:h-[calc(100vh-8.5rem)] md:overflow-y-auto md:px-0 md:pb-6 md:pt-0">

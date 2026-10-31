@@ -13,7 +13,8 @@ INSERT INTO app_settings (setting_key, setting_value) VALUES
   ('platform_fee_rate',       '0.05'),  -- 5% -> P150 job = P7.50 fee, P142.50 net
   ('convenience_fee',         '0.00'),
   ('default_search_radius_km','5'),     -- per-town radius lives in includes/siargao.php
-  ('offer_timeout_seconds',   '60'),
+  ('offer_timeout_seconds',   '60'),    -- roadside: seconds a vulcator has to answer
+  ('walkin_offer_timeout_seconds', '300'), -- shop visits: seconds a shop has to answer
   ('currency',                'PHP');
 
 INSERT INTO users (id, role, full_name, email, phone, password_hash) VALUES
@@ -191,6 +192,20 @@ INSERT INTO ratings (job_id, customer_id, provider_id, stars, comment) VALUES
 
 -- (WHERE id > 0 keeps MySQL Workbench's Safe Updates mode happy)
 UPDATE users SET terms_accepted_at = NOW() - INTERVAL 30 DAY WHERE id > 0;
+
+-- Motorist types: Juan is a tourist on a rented motorbike, Maria a local, Carlo a private car owner.
+UPDATE users SET motorist_type = 'rental'        WHERE id = 2;
+UPDATE users SET motorist_type = 'local'         WHERE id = 3;
+UPDATE users SET motorist_type = 'private_owner' WHERE id = 4;
+
+-- Two employees of John Doe Vulcanizing (Dapa). Rico is on duty.
+INSERT INTO users (id, role, full_name, email, phone, password_hash, employer_provider_id, on_duty, terms_accepted_at) VALUES
+  (11, 'employee', 'Rico Abad',     'rico@vulcatic.test',  '09181234500', '$2y$10$zA9tfkmTwu09cxozfVPuTu9Nxm9OusZXoGWv1s3DgaAzGAalgWdmK', 2, 1, NOW() - INTERVAL 20 DAY),
+  (12, 'employee', 'Dante Pelaez',  'dante@vulcatic.test', '09181234501', '$2y$10$zA9tfkmTwu09cxozfVPuTu9Nxm9OusZXoGWv1s3DgaAzGAalgWdmK', 2, 0, NOW() - INTERVAL 10 DAY);
+
+-- Problem type for the sample jobs, and Rico did the Dapa shop's jobs.
+UPDATE jobs SET problem = CASE service_id WHEN 2 THEN 'puncture' WHEN 1 THEN 'flat_tire' ELSE 'other' END WHERE id > 0;
+UPDATE jobs SET assigned_user_id = 11, assignment_status = 'accepted' WHERE id > 0 AND provider_id = 2;
 
 -- keep providers.rating_avg / rating_count in sync (the PHP app does this
 -- after every new rating, because shared hosting does not allow triggers)
