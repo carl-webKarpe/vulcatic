@@ -1,6 +1,6 @@
 Options -Indexes
-# index.php wins over the old placeholder index.html
-DirectoryIndex index.php index.html
+# Always open the PHP app, never a stray index.html
+DirectoryIndex index.php
 
 # Block project files that are not part of the website
 <FilesMatch "(\.(md|sql|json|lock)|^tailwind\.config\.js|^\.git.*)$">
