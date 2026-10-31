@@ -46,7 +46,7 @@ $check = '<svg viewBox="0 0 24 24" class="h-5 w-5 shrink-0" fill="none" stroke="
 <header id="nav" class="nav fixed inset-x-0 top-0 z-50 transition-all duration-300">
   <div class="mx-auto flex max-w-6xl items-center justify-between px-5 py-4 md:px-8">
     <a href="<?= url('index.php') ?>" class="group flex items-center gap-2">
-      <?= logo_img('h-11 w-11 transition group-hover:-rotate-12 group-hover:scale-110') ?>
+      <?= logo_full('h-16 -my-2 origin-bottom transition duration-300 group-hover:-rotate-6 group-hover:scale-110') ?>
       <span class="text-xl font-bold tracking-tight">Vulcatic</span>
     </a>
     <nav class="hidden items-center gap-8 text-sm font-medium text-gray-600 md:flex">
@@ -375,7 +375,7 @@ $check = '<svg viewBox="0 0 24 24" class="h-5 w-5 shrink-0" fill="none" stroke="
 
 <footer class="border-t border-gray-100 py-10">
   <div class="mx-auto flex max-w-6xl flex-col items-center justify-between gap-4 px-5 text-sm text-gray-500 md:flex-row md:px-8">
-    <a href="<?= url('index.php') ?>" class="flex items-center gap-2 font-semibold text-gray-800"><?= logo_img('h-9 w-9') ?> Vulcatic</a>
+    <a href="<?= url('index.php') ?>" class="flex items-center gap-2 font-semibold text-gray-800"><?= logo_full('h-12') ?> Vulcatic</a>
     <p>Roadside tire help for travelers, tourists and locals.</p>
     <p>© <?= date('Y') ?> Vulcatic</p>
   </div>

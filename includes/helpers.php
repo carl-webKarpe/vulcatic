@@ -88,6 +88,12 @@ function logo_img(string $class = 'h-10 w-10'): string
     return '<img src="' . e(url('assets/img/gecko-head.png')) . '" alt="" class="' . e($class) . ' object-contain" width="256" height="256">';
 }
 
+// The whole gecko, standing. Size it by height, e.g. 'h-14'.
+function logo_full(string $class = 'h-14'): string
+{
+    return '<img src="' . e(url('assets/img/gecko-small.webp')) . '" alt="" class="' . e($class) . ' w-auto" width="124" height="192">';
+}
+
 // "Jose Dela Cruz" -> "JD" for avatar circles.
 function initials(string $name): string
 {
