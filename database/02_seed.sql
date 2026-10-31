@@ -189,11 +189,12 @@ INSERT INTO ratings (job_id, customer_id, provider_id, stars, comment) VALUES
   (33, 2, 2, 4, NULL),
   (34, 2, 2, 5, NULL);
 
-UPDATE users SET terms_accepted_at = NOW() - INTERVAL 30 DAY;
+-- (WHERE id > 0 keeps MySQL Workbench's Safe Updates mode happy)
+UPDATE users SET terms_accepted_at = NOW() - INTERVAL 30 DAY WHERE id > 0;
 
 -- keep providers.rating_avg / rating_count in sync (the PHP app does this
 -- after every new rating, because shared hosting does not allow triggers)
-UPDATE providers p
-JOIN (SELECT provider_id, AVG(stars) AS avg_stars, COUNT(*) AS cnt
-      FROM ratings GROUP BY provider_id) r ON r.provider_id = p.id
-SET p.rating_avg = r.avg_stars, p.rating_count = r.cnt;
+UPDATE providers
+SET rating_count = (SELECT COUNT(*) FROM ratings r WHERE r.provider_id = providers.id),
+    rating_avg   = COALESCE((SELECT AVG(stars) FROM ratings r WHERE r.provider_id = providers.id), 0)
+WHERE id > 0;
