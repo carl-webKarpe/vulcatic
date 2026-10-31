@@ -121,10 +121,23 @@ listed at the top of `sw.js`, bump `VERSION` in `sw.js` so phones pick up the ne
 
 ## Admin dashboard
 
-Log in as admin (`09170000000`) to see, for the last 7, 14 or 30 days:
-requests, completion rate, customer payments, platform earnings, time to accept and to arrive,
-requests per day, a per-town table and map, vulcators (approve, reject, suspend, reactivate),
-and recent jobs filtered by town and status. Suspending a vulcator blocks their login.
+Log in as admin (`09170000000`). A sidebar (a slide-in menu on phones) organises everything:
+
+| Section | What's there |
+|---|---|
+| **Overview** | What needs attention, 8 headline numbers (7/14/30 days), requests per day, requests by town, latest requests |
+| **Action needed → Approvals** | New vulcators with full details (owner, phone, pin, services and prices, hours); approve or reject |
+| **Action needed → Password resets** | Open requests; set a temporary password (shown once, with Text/Call) or dismiss; recent history |
+| **Operations → Live jobs** | Every job in progress, grouped by stage; flags requests with no taker after 3 minutes; refreshes every 20 s |
+| **Operations → All jobs** | Search, filter by period/town/status, 25 per page, **Export CSV**; click a row for the job's full detail |
+| **Job detail** | Customer and vulcator, location, money breakdown, full timeline, which vulcators were offered it, rating |
+| **Operations → Towns** | Per-town requests, completion, time to accept, payments and vulcator coverage, plus a map |
+| **People → Vulcators** | Filter (online, pending, suspended, rejected), town, search; rating, accept rate, jobs, earnings; suspend or reactivate |
+| **People → Customers** | Requests, cancellations (flags heavy cancellers), spending; suspend or reactivate |
+| **People → Reviews** | Average, star breakdown, latest or low (3★ or less) reviews |
+| **System → Settings** | Platform fee, convenience fee, time to accept, fallback radius, service base prices and on/off |
+
+Badges in the sidebar show what's waiting. Suspended accounts can't log in.
 
 ## Changing styles (Tailwind)
 
