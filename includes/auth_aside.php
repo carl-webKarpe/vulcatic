@@ -2,9 +2,9 @@
 <aside class="relative hidden overflow-hidden bg-brand-500 text-white md:flex md:w-1/2 md:flex-col md:justify-between md:p-12">
   <div class="absolute -right-24 -top-24 h-80 w-80 rounded-full bg-white/10"></div>
   <div class="absolute -bottom-32 -left-20 h-96 w-96 rounded-full bg-black/10"></div>
-  <a href="<?= url('index.php') ?>" class="relative flex items-center gap-3">
-    <span class="grid h-14 w-14 place-items-center rounded-2xl bg-white shadow-lg"><?= logo_img('h-12 w-12') ?></span>
-    <span class="text-2xl font-bold tracking-tight">Vulcatic</span>
+  <a href="<?= url('index.php') ?>" class="group relative flex items-center gap-3">
+    <?= logo_full('h-20 drop-shadow-[0_6px_10px_rgba(0,0,0,0.25)] origin-bottom transition duration-300 group-hover:-rotate-6 group-hover:scale-105') ?>
+    <span class="text-3xl font-bold tracking-tight">Vulcatic</span>
   </a>
   <div class="relative max-w-md">
     <h2 class="text-4xl font-bold leading-tight">Flat tire?<br>Help is nearby.</h2>
