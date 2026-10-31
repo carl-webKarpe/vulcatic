@@ -62,6 +62,7 @@ require __DIR__ . '/includes/header.php';
           <label for="password" class="mb-1 block text-sm font-medium">Password</label>
           <div class="relative">
             <input id="password" name="password" type="password" required autocomplete="current-password"
+                   placeholder="Password"
                    class="w-full rounded-xl border border-gray-300 px-4 py-3 pr-16 outline-none focus:border-brand-500 focus:ring-2 focus:ring-brand-100">
             <button type="button" data-toggle-password="password"
                     class="absolute inset-y-0 right-0 px-4 text-sm font-medium text-gray-500">Show</button>
