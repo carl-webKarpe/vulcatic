@@ -31,6 +31,7 @@ function api_user(?string $role = null): array
     $user = current_user();
     if (!$user) json_error('Please log in again.', 401);
     if ($role !== null && $user['role'] !== $role) json_error('Not allowed.', 403);
+    if ($user['must_change_password']) json_error('Please set a new password first.', 403);
 
     if ($_SERVER['REQUEST_METHOD'] === 'POST'
         && !hash_equals($_SESSION['csrf'] ?? '', $_SERVER['HTTP_X_CSRF_TOKEN'] ?? '')) {

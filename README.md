@@ -20,6 +20,11 @@ history.php          customer: past requests and receipts / vulcator: earnings, 
 profile.php          your details and password; vulcators also edit shop, services and prices, GCash, location
 admin.php            admin dashboard: KPIs, requests per day, towns, vulcator management, jobs
 offline.html         shop finder that works with no signal (kept on the phone)
+forgot.php           "Forgot password?" request; an admin sets a temporary password
+change_password.php  forced new password after logging in with a temporary one
+terms.php privacy.php  Terms of Use and Privacy Policy (Data Privacy Act of 2012)
+404.php              friendly "Lost on the road?" page for wrong addresses
+storage/             login sessions (kept 30 days; not in git)
 sw.js                service worker for offline mode
 manifest.webmanifest lets phones install Vulcatic like an app
 api/                 JSON endpoints the live pages call every few seconds
@@ -137,13 +142,43 @@ tailwindcss-windows-x64.exe -i tailwind/input.css -o assets/css/app.css --minify
 
 `--watch` rebuilds every time you save. Put custom (non-Tailwind) CSS in `tailwind/input.css`.
 
+## Accounts and security
+
+- **Stay logged in:** logins last 30 days, even after closing the browser.
+- **Forgot password:** the user sends a request from the login page. It appears on the
+  admin dashboard. The admin calls the number to check it's really them, taps
+  **Set temporary password**, and reads or texts it to them. The user must choose a new
+  password right after logging in. (InfinityFree can't send email or SMS reliably.)
+- **Password guessing:** 5 wrong tries for one account, or 20 from one device, locks login
+  for 15 minutes.
+- **Consent:** sign-up requires agreeing to the Terms of Use and Privacy Policy.
+- **Security headers** (in `.htaccess`) block framing, MIME sniffing and unexpected scripts.
+- With `debug` off, errors show a friendly page and the details go to the server's error log.
+
+## Publishing checklist
+
+Before going live:
+
+1. In Workbench / phpMyAdmin, import `01_schema.sql` and then **`02_production.sql`**
+   (not `02_seed.sql`). It adds the services and one admin: phone `09170000000`,
+   password `ChangeMe2026`. Log in right away. You'll be asked to set your own password.
+   Then change the admin phone number on the Profile page.
+2. In `config/config.php` on the server: real database details, `'debug' => false`,
+   and your `contact_email` / `contact_phone` (shown on the Privacy and Terms pages).
+3. Turn on HTTPS (free SSL on InfinityFree). Location, offline mode and alerts need it.
+4. Make sure the `storage/` folder can be written by PHP (it's created automatically).
+5. Have someone familiar with Philippine law review `terms.php` and `privacy.php`.
+   They're a solid plain-language starting point, not legal advice.
+6. Approve your first vulcators from the admin dashboard.
+
 ## Deploy to InfinityFree
 
 1. Create the database in the control panel, then import `database/01_schema.sql`
    in phpMyAdmin (see `database/README.md`).
 2. Upload `index.php`, the other `.php` pages, `.htaccess`, `assets/`, `config/` and
    `includes/` into the account's `htdocs/` folder (File Manager or FTP with FileZilla).
-   You don't need to upload `database/`, `tailwind/` or the `.md` files.
+   Also upload `api/`, `storage/` (with its `.htaccess`), `offline.html`, `sw.js`,
+   `manifest.webmanifest`, `404.php`. You don't need to upload `database/`, `tailwind/` or the `.md` files.
 3. Create `config/config.php` on the server with the InfinityFree database
    host/name/user/password and `debug` set to `false` (leave `base_url` as `'auto'`).
 4. Turn on the free SSL certificate. The "Use my current location" button only

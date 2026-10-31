@@ -189,6 +189,8 @@ INSERT INTO ratings (job_id, customer_id, provider_id, stars, comment) VALUES
   (33, 2, 2, 4, NULL),
   (34, 2, 2, 5, NULL);
 
+UPDATE users SET terms_accepted_at = NOW() - INTERVAL 30 DAY;
+
 -- keep providers.rating_avg / rating_count in sync (the PHP app does this
 -- after every new rating, because shared hosting does not allow triggers)
 UPDATE providers p

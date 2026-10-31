@@ -162,7 +162,8 @@ require __DIR__ . '/includes/app_header.php';
 
     <form method="post" action="<?= url('logout.php') ?>" class="<?= $card ?> flex items-center justify-between">
       <?= csrf_field() ?>
-      <div><p class="font-bold">Log out</p><p class="text-sm text-gray-500">Signed in as <?= e($user['full_name']) ?></p></div>
+      <div><p class="font-bold">Log out</p><p class="text-sm text-gray-500">Signed in as <?= e($user['full_name']) ?> ·
+        <a href="<?= url('terms.php') ?>" class="underline">Terms</a> · <a href="<?= url('privacy.php') ?>" class="underline">Privacy</a></p></div>
       <button class="rounded-xl px-4 py-2.5 text-sm font-semibold text-red-600 ring-1 ring-red-200 hover:bg-red-50">Log out</button>
     </form>
   </div>

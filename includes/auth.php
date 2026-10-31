@@ -7,7 +7,7 @@ function current_user(): ?array
     if ($user === false) {
         $user = null;
         if (!empty($_SESSION['user_id'])) {
-            $stmt = db()->prepare('SELECT id, role, full_name, email, phone, avatar_url
+            $stmt = db()->prepare('SELECT id, role, full_name, email, phone, avatar_url, must_change_password
                                    FROM users WHERE id = ? AND is_active = 1');
             $stmt->execute([$_SESSION['user_id']]);
             $user = $stmt->fetch() ?: null;
@@ -47,6 +47,9 @@ function require_login(?string $role = null): array
     if (!$user) {
         flash('error', 'Please log in first.');
         redirect('login.php');
+    }
+    if ($user['must_change_password'] && basename($_SERVER['SCRIPT_NAME']) !== 'change_password.php') {
+        redirect('change_password.php');
     }
     if ($role !== null && $user['role'] !== $role) {
         redirect(home_for($user));

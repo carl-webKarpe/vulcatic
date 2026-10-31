@@ -181,3 +181,8 @@ html.js [data-reveal].is-visible { opacity: 1; translate: 0 0; }
 .stars button:hover { transform: scale(1.2); }
 .gecko-pop { animation: gecko-pop .7s cubic-bezier(.3,1.6,.5,1) both; transform-origin: 50% 100%; }
 @keyframes gecko-pop { from { transform: translateY(30px) scale(.6); opacity: 0; } }
+
+/* Terms / Privacy pages */
+.legal h2 { margin-top: 2rem; font-size: 1.15rem; font-weight: 700; color: #1E2235; }
+.legal ul { list-style: disc; padding-left: 1.25rem; }
+.legal li + li { margin-top: .35rem; }

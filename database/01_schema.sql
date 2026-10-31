@@ -21,6 +21,8 @@ DROP TABLE IF EXISTS services;
 DROP TABLE IF EXISTS providers;
 DROP TABLE IF EXISTS users;
 DROP TABLE IF EXISTS app_settings;
+DROP TABLE IF EXISTS password_reset_requests;
+DROP TABLE IF EXISTS login_attempts;
 
 SET FOREIGN_KEY_CHECKS = 1;
 
@@ -36,6 +38,8 @@ CREATE TABLE users (
   password_hash  VARCHAR(255) NOT NULL,          -- PHP password_hash()
   avatar_url     VARCHAR(255) NULL,
   is_active      TINYINT(1)   NOT NULL DEFAULT 1,
+  must_change_password TINYINT(1) NOT NULL DEFAULT 0,  -- set after an admin password reset
+  terms_accepted_at    DATETIME NULL,                  -- agreed to Terms + Privacy Policy
   created_at     DATETIME     NOT NULL DEFAULT CURRENT_TIMESTAMP,
   updated_at     DATETIME     NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
   PRIMARY KEY (id),
@@ -218,4 +222,36 @@ CREATE TABLE app_settings (
   setting_key    VARCHAR(60)  NOT NULL,
   setting_value  VARCHAR(255) NOT NULL,
   PRIMARY KEY (setting_key)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- ---------------------------------------------------------------------
+-- password_reset_requests: "Forgot password?" (InfinityFree can't send
+-- email/SMS reliably, so an admin sets a temporary password and tells the
+-- user by call or text)
+-- ---------------------------------------------------------------------
+CREATE TABLE password_reset_requests (
+  id          INT UNSIGNED NOT NULL AUTO_INCREMENT,
+  user_id     INT UNSIGNED NULL,               -- NULL if the number has no account
+  phone       VARCHAR(20)  NOT NULL,
+  note        VARCHAR(255) NULL,
+  status      ENUM('open','done','dismissed') NOT NULL DEFAULT 'open',
+  created_at  DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  handled_at  DATETIME NULL,
+  PRIMARY KEY (id),
+  KEY idx_reset_status (status, created_at),
+  KEY idx_reset_phone (phone, created_at),
+  CONSTRAINT fk_reset_user FOREIGN KEY (user_id) REFERENCES users (id) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- ---------------------------------------------------------------------
+-- login_attempts: failed logins, to slow down password guessing
+-- ---------------------------------------------------------------------
+CREATE TABLE login_attempts (
+  id            INT UNSIGNED NOT NULL AUTO_INCREMENT,
+  login         VARCHAR(160) NOT NULL,
+  ip            VARCHAR(45)  NOT NULL,
+  attempted_at  DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  PRIMARY KEY (id),
+  KEY idx_attempts_login (login, attempted_at),
+  KEY idx_attempts_ip (ip, attempted_at)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;

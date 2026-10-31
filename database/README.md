@@ -8,6 +8,7 @@ move it to **InfinityFree** with **phpMyAdmin**.
 | `00_create_database.sql` | Creates the `vulcatic` database | Run | **Skip** (InfinityFree creates it) |
 | `01_schema.sql` | Creates all tables (drops them first) | Run | Import |
 | `02_seed.sql` | Sample users, vulcators and two weeks of job history on Siargao | Run | Import only for testing |
+| `02_production.sql` | Settings, services and one admin (no sample people). Use **instead of** `02_seed.sql` when publishing | Optional | **Import this** when going live |
 | `03_test_queries.sql` | The queries each screen will use | Run to test | Not needed |
 
 All sample accounts use the password `password123`. Sample vulcators and shops are on
@@ -30,7 +31,8 @@ Running `01_schema.sql` again wipes the tables, so you can always start fresh.
 1. In the InfinityFree control panel: **MySQL Databases** → create a database
    (it will be named something like `if0_12345678_vulcatic`).
 2. Open **phpMyAdmin** for that database.
-3. **Import** → `01_schema.sql` → Go. Then import `02_seed.sql` if you want test data.
+3. **Import** → `01_schema.sql` → Go. Then import **`02_production.sql`** for the live site
+   (or `02_seed.sql` only for a test copy).
 4. Write down the host (`sqlXXX.infinityfree.com`), database name, user and password
    for the PHP config file.
 

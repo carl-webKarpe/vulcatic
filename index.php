@@ -377,7 +377,7 @@ $check = '<svg viewBox="0 0 24 24" class="h-5 w-5 shrink-0" fill="none" stroke="
   <div class="mx-auto flex max-w-6xl flex-col items-center justify-between gap-4 px-5 text-sm text-gray-500 md:flex-row md:px-8">
     <a href="<?= url('index.php') ?>" class="flex items-center gap-2 font-semibold text-gray-800"><?= logo_full('h-12') ?> Vulcatic</a>
     <p>Roadside tire help on Siargao Island, Surigao del Norte.</p>
-    <p>© <?= date('Y') ?> Vulcatic</p>
+    <p class="flex gap-4"><a href="<?= url('terms.php') ?>" class="hover:text-brand-600">Terms</a><a href="<?= url('privacy.php') ?>" class="hover:text-brand-600">Privacy</a><span>© <?= date('Y') ?> Vulcatic</span></p>
   </div>
 </footer>
 

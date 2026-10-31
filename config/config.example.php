@@ -22,5 +22,8 @@ return [
         // Only set it by hand if links break, e.g. '/vulcatic'.
         'base_url' => 'auto',
         'debug'    => true,   // set to false on InfinityFree
+        // Shown on the Privacy Policy and Terms pages. Fill these in before going live.
+        'contact_email' => '',
+        'contact_phone' => '',
     ],
 ];

@@ -4,6 +4,36 @@ require __DIR__ . '/includes/jobs.php';
 require __DIR__ . '/includes/charts.php';
 $user = require_login('admin');
 
+// ---------- Password reset requests ----------
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['reset_id'])) {
+    verify_csrf();
+    $stmt = db()->prepare("SELECT r.*, u.full_name FROM password_reset_requests r LEFT JOIN users u ON u.id = r.user_id
+                           WHERE r.id = ? AND r.status = 'open'");
+    $stmt->execute([(int) $_POST['reset_id']]);
+    if ($r = $stmt->fetch()) {
+        if (($_POST['action'] ?? '') === 'reset' && $r['user_id']) {
+            // Easy to read out over the phone: no 0/O or 1/I/l.
+            $chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
+            $temp = '';
+            for ($i = 0; $i < 8; $i++) $temp .= $chars[random_int(0, strlen($chars) - 1)];
+            db()->prepare('UPDATE users SET password_hash = ?, must_change_password = 1, is_active = 1 WHERE id = ?')
+                ->execute([password_hash($temp, PASSWORD_DEFAULT), $r['user_id']]);
+            db()->prepare('DELETE FROM login_attempts WHERE login = ?')->execute([$r['phone']]);
+            // Shown once on the next page load, until the admin closes it.
+            $_SESSION['temp_password'] = ['name' => $r['full_name'], 'phone' => $r['phone'], 'password' => substr($temp, 0, 4) . '-' . substr($temp, 4)];
+            db()->prepare("UPDATE password_reset_requests SET status = 'done', handled_at = NOW() WHERE user_id = ? AND status = 'open'")->execute([$r['user_id']]);
+        } else {
+            db()->prepare("UPDATE password_reset_requests SET status = 'dismissed', handled_at = NOW() WHERE id = ?")->execute([$r['id']]);
+            flash('success', 'Request dismissed.');
+        }
+    }
+    redirect('admin.php');
+}
+if (isset($_GET['temp_done'])) {
+    unset($_SESSION['temp_password']);
+    redirect('admin.php');
+}
+
 // ---------- Actions on vulcators ----------
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     verify_csrf();
@@ -90,6 +120,9 @@ $vulcators = db()->query("SELECT p.id, p.display_name, p.provider_type, p.munici
                           FROM providers p JOIN users u ON u.id = p.user_id
                           ORDER BY FIELD(p.verification_status, 'pending', 'verified', 'rejected'), p.municipality, p.display_name")->fetchAll();
 $pending = array_filter($vulcators, fn ($v) => $v['verification_status'] === 'pending');
+$resets = db()->query("SELECT r.id, r.phone, r.note, r.created_at, r.user_id, u.full_name, u.role FROM password_reset_requests r
+                       LEFT JOIN users u ON u.id = r.user_id WHERE r.status = 'open' ORDER BY r.created_at")->fetchAll();
+$temp = $_SESSION['temp_password'] ?? null;
 
 // ---------- Recent jobs ----------
 $where = ['1 = 1']; $args = [];
@@ -132,6 +165,46 @@ $card = 'rounded-2xl bg-white p-5 shadow-sm ring-1 ring-black/5';
       <?php endforeach; ?>
     </div>
   </div>
+
+  <?php if ($temp): ?>
+    <section class="rounded-2xl bg-ink-900 p-5 text-white">
+      <p class="text-sm text-white/70">Temporary password for <b class="text-white"><?= e($temp['name']) ?></b> · <?= e($temp['phone']) ?></p>
+      <p class="mt-2 font-mono text-3xl font-bold tracking-widest text-ok-500"><?= e($temp['password']) ?></p>
+      <p class="mt-2 text-sm text-white/70">Call or text it to them now (without the dash is fine). They'll choose a new password when they log in.
+        This won't be shown again.</p>
+      <div class="mt-4 flex flex-wrap gap-2">
+        <a href="sms:<?= e($temp['phone']) ?>?body=<?= rawurlencode('Vulcatic: your temporary password is ' . str_replace('-', '', $temp['password']) . '. Log in and choose a new password.') ?>"
+           class="rounded-xl bg-white px-4 py-2 text-sm font-semibold text-ink-900">Text it</a>
+        <a href="tel:<?= e($temp['phone']) ?>" class="rounded-xl bg-white/10 px-4 py-2 text-sm font-semibold ring-1 ring-white/20">Call</a>
+        <a href="<?= url('admin.php?temp_done=1') ?>" class="rounded-xl px-4 py-2 text-sm font-semibold text-white/70 hover:text-white">Done, close this</a>
+      </div>
+    </section>
+  <?php endif; ?>
+
+  <?php if ($resets): ?>
+    <section class="rounded-2xl bg-blue-50 p-5 ring-1 ring-blue-200">
+      <h2 class="font-bold text-blue-900"><?= count($resets) ?> password reset request<?= count($resets) > 1 ? 's' : '' ?></h2>
+      <p class="text-sm text-blue-800/80">Check it's really them (call the number) before setting a temporary password.</p>
+      <ul class="mt-3 divide-y divide-blue-200">
+        <?php foreach ($resets as $r): ?>
+          <li class="flex flex-col gap-3 py-3 sm:flex-row sm:items-center">
+            <div class="min-w-0 flex-1">
+              <p class="font-semibold"><?= $r['user_id'] ? e($r['full_name']) . ' <span class="text-xs font-medium text-gray-500">(' . e($r['role']) . ')</span>' : '<span class="text-gray-500">No account with this number</span>' ?></p>
+              <p class="text-sm text-gray-600"><?= e($r['phone']) ?> · <?= e(date('M j, g:i A', strtotime($r['created_at']))) ?><?= $r['note'] ? ' · “' . e($r['note']) . '”' : '' ?></p>
+            </div>
+            <form method="post" class="flex gap-2">
+              <?= csrf_field() ?><input type="hidden" name="reset_id" value="<?= (int) $r['id'] ?>">
+              <?php if ($r['user_id']): ?>
+                <button name="action" value="reset" data-confirm="Set a temporary password for <?= e($r['full_name']) ?>?" data-confirm-label="Set password"
+                        class="rounded-lg bg-blue-600 px-4 py-2 text-sm font-semibold text-white hover:bg-blue-700">Set temporary password</button>
+              <?php endif; ?>
+              <button name="action" value="dismiss" class="rounded-lg bg-white px-4 py-2 text-sm font-semibold text-gray-600 ring-1 ring-gray-200 hover:bg-gray-50">Dismiss</button>
+            </form>
+          </li>
+        <?php endforeach; ?>
+      </ul>
+    </section>
+  <?php endif; ?>
 
   <?php if ($pending): ?>
     <section class="rounded-2xl bg-amber-50 p-5 ring-1 ring-amber-200">

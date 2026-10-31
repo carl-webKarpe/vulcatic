@@ -15,16 +15,36 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
     // Log in with either a phone number or an email address.
     $phone = normalize_phone($login);
-    $stmt = db()->prepare('SELECT * FROM users WHERE (phone = ? OR email = ?) AND is_active = 1 LIMIT 1');
-    $stmt->execute([$phone ?? '', $login]);
-    $found = $stmt->fetch();
+    $key   = $phone ?? mb_strtolower($login);
+    $ip    = $_SERVER['REMOTE_ADDR'] ?? '';
 
-    if ($found && password_verify($password, $found['password_hash'])) {
-        login_user($found);
-        flash('success', 'Welcome back, ' . explode(' ', $found['full_name'])[0] . '!');
-        redirect(home_for($found));
+    // Slow down password guessing: 5 wrong tries per account or 20 per device
+    // in 15 minutes locks login for 15 minutes.
+    $stmt = db()->prepare('SELECT
+            (SELECT COUNT(*) FROM login_attempts WHERE login = ? AND attempted_at > NOW() - INTERVAL 15 MINUTE),
+            (SELECT COUNT(*) FROM login_attempts WHERE ip = ? AND attempted_at > NOW() - INTERVAL 15 MINUTE)');
+    $stmt->execute([$key, $ip]);
+    [$byLogin, $byIp] = $stmt->fetch(PDO::FETCH_NUM);
+
+    if ($byLogin >= 5 || $byIp >= 20) {
+        $error = 'Too many wrong tries. Please wait 15 minutes, or tap "Forgot password?".';
+    } else {
+        $stmt = db()->prepare('SELECT * FROM users WHERE (phone = ? OR email = ?) AND is_active = 1 LIMIT 1');
+        $stmt->execute([$phone ?? '', $login]);
+        $found = $stmt->fetch();
+
+        if ($found && password_verify($password, $found['password_hash'])) {
+            db()->prepare('DELETE FROM login_attempts WHERE login = ?')->execute([$key]);
+            login_user($found);
+            if ($found['must_change_password']) redirect('change_password.php');
+            flash('success', 'Welcome back, ' . explode(' ', $found['full_name'])[0] . '!');
+            redirect(home_for($found));
+        }
+        db()->prepare('INSERT INTO login_attempts (login, ip) VALUES (?, ?)')->execute([$key, $ip]);
+        db()->exec('DELETE FROM login_attempts WHERE attempted_at < NOW() - INTERVAL 1 DAY');
+        $left = 4 - $byLogin;
+        $error = 'Wrong phone/email or password.' . ($left <= 2 && $left > 0 ? " $left tr" . ($left === 1 ? 'y' : 'ies') . ' left before a 15-minute wait.' : '');
     }
-    $error = 'Wrong phone/email or password.';
 }
 
 $pageTitle = 'Log in';
@@ -60,7 +80,10 @@ require __DIR__ . '/includes/header.php';
                  class="w-full rounded-xl border border-gray-300 px-4 py-3 outline-none focus:border-brand-500 focus:ring-2 focus:ring-brand-100">
         </div>
         <div>
-          <label for="password" class="mb-1 block text-sm font-medium">Password</label>
+          <div class="mb-1 flex items-baseline justify-between">
+            <label for="password" class="block text-sm font-medium">Password</label>
+            <a href="<?= url('forgot.php') ?>" class="text-sm font-medium text-brand-600 hover:underline">Forgot password?</a>
+          </div>
           <div class="relative">
             <input id="password" name="password" type="password" required autocomplete="current-password"
                    placeholder="Password"

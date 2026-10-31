@@ -12,6 +12,12 @@ if ($config['app']['debug']) {
     error_reporting(E_ALL);
 } else {
     ini_set('display_errors', '0');
+    // Live site: log the details, show people a friendly page.
+    set_exception_handler(function (Throwable $e) {
+        error_log('Vulcatic: ' . $e->getMessage() . ' in ' . $e->getFile() . ':' . $e->getLine());
+        http_response_code(500);
+        readfile(__DIR__ . '/error_page.html');
+    });
 }
 
 date_default_timezone_set('Asia/Manila');

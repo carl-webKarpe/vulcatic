@@ -21,6 +21,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     if (mb_strlen($fullName) < 2)  $errors['full_name'] = 'Enter your full name.';
     if (!$phone)                   $errors['phone'] = 'Enter a valid PH mobile number, e.g. 09171234567.';
     if ($email !== '' && !filter_var($email, FILTER_VALIDATE_EMAIL)) $errors['email'] = 'Enter a valid email or leave it blank.';
+    if (empty($_POST['terms']))    $errors['terms'] = 'Please agree to the Terms of Use and Privacy Policy to continue.';
     if (strlen($password) < 8)     $errors['password'] = 'Use at least 8 characters.';
     elseif ($password !== $confirm) $errors['password_confirm'] = 'Passwords do not match.';
 
@@ -61,7 +62,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $pdo = db();
         $pdo->beginTransaction();
         try {
-            $stmt = $pdo->prepare('INSERT INTO users (role, full_name, email, phone, password_hash) VALUES (?, ?, ?, ?, ?)');
+            $stmt = $pdo->prepare('INSERT INTO users (role, full_name, email, phone, password_hash, terms_accepted_at) VALUES (?, ?, ?, ?, ?, NOW())');
             $stmt->execute([$role, $fullName, $email ?: null, $phone, password_hash($password, PASSWORD_DEFAULT)]);
             $userId = (int) $pdo->lastInsertId();
 
@@ -213,6 +214,14 @@ require __DIR__ . '/includes/header.php';
           <input id="password_confirm" name="password_confirm" type="password" autocomplete="new-password" class="<?= $input ?>">
           <?= field_error($errors, 'password_confirm') ?>
         </div>
+
+        <label class="flex items-start gap-3 text-sm text-gray-600">
+          <input type="checkbox" name="terms" value="1" class="mt-0.5 h-4 w-4 shrink-0 accent-brand-500" <?= !empty($_POST['terms']) ? 'checked' : '' ?>>
+          <span>I agree to the <a href="<?= url('terms.php') ?>" target="_blank" class="font-semibold text-brand-600 underline">Terms of Use</a>
+            and <a href="<?= url('privacy.php') ?>" target="_blank" class="font-semibold text-brand-600 underline">Privacy Policy</a>,
+            including sharing my name, number and location with the other person during a job.</span>
+        </label>
+        <?= field_error($errors, 'terms') ?>
 
         <button type="submit" class="w-full rounded-xl bg-brand-500 py-3 font-semibold text-white shadow-md shadow-brand-500/30 transition hover:bg-brand-600">
           Create account
