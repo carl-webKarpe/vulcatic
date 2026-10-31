@@ -212,12 +212,12 @@ require __DIR__ . '/includes/app_header.php';
       <p class="text-sm text-gray-500">Customers see your price before you arrive.</p>
       <ul class="mt-4 space-y-2">
         <?php foreach ($services as $s): $on = $s['price'] !== null; ?>
-          <li class="flex items-center gap-3 rounded-xl bg-gray-50 px-3 py-2">
+          <li class="flex items-center gap-2 rounded-xl bg-gray-50 px-3 py-2 sm:gap-3">
             <input type="checkbox" id="svc<?= (int) $s['id'] ?>" name="service[<?= (int) $s['id'] ?>]" value="1" class="h-4 w-4 accent-brand-500" <?= $on ? 'checked' : '' ?>>
-            <label for="svc<?= (int) $s['id'] ?>" class="flex-1 text-sm font-medium"><?= e($s['name']) ?></label>
+            <label for="svc<?= (int) $s['id'] ?>" class="min-w-0 flex-1 text-sm font-medium"><?= e($s['name']) ?></label>
             <span class="text-sm text-gray-400">₱</span>
             <input name="price[<?= (int) $s['id'] ?>]" inputmode="decimal" value="<?= e(number_format((float) ($s['price'] ?? $s['base_price']), 2, '.', '')) ?>"
-                   aria-label="Price for <?= e($s['name']) ?>" class="w-24 rounded-lg border border-gray-300 px-2 py-1.5 text-right text-sm outline-none focus:border-brand-500">
+                   aria-label="Price for <?= e($s['name']) ?>" class="w-20 shrink-0 rounded-lg border border-gray-300 px-2 py-1.5 text-right text-sm outline-none focus:border-brand-500">
           </li>
         <?php endforeach; ?>
       </ul>

@@ -14,6 +14,7 @@ $greeting  = 'Welcome back, ' . e(first_name($user['full_name'])) . '!';
 $subline   = 'Job ' . $job['job_code'];
 $statusDot = 'online';
 $pageTitle = 'Current job';
+$activeTab = 'job';
 $useMap    = true;
 require __DIR__ . '/includes/header.php';
 require __DIR__ . '/includes/app_header.php';
@@ -35,7 +36,6 @@ require __DIR__ . '/includes/app_header.php';
   </section>
 </main>
 <?php
-$activeTab   = 'home';
 $pageScripts = ['provider_job.js'];
 require __DIR__ . '/includes/bottom_nav.php';
 require __DIR__ . '/includes/footer.php';

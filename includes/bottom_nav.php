@@ -2,6 +2,7 @@
 // Phone bottom navigation. Set $activeTab ('home', 'shops', 'history', 'profile', 'admin') first.
 require_once __DIR__ . '/nav.php';
 $activeTab = $activeTab ?? 'home';
+if (current_user()['role'] === 'provider') echo '</div>'; // closes the sidebar wrapper from app_header.php
 ?>
 <nav class="fixed inset-x-0 bottom-0 z-40 border-t border-gray-200 bg-white pb-[env(safe-area-inset-bottom)] md:hidden">
   <ul class="mx-auto flex max-w-md justify-around">

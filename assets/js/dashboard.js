@@ -1,6 +1,26 @@
 // Vulcator dashboard: share location while online and pop up new job requests.
 (() => {
   const dash = document.getElementById('dashboard');
+
+  // "Your area" map: where you are and the circle you get requests from.
+  const area = document.getElementById('coverage-map');
+  if (area && window.L) {
+    const pos = [Number(area.dataset.lat), Number(area.dataset.lng)];
+    const m = VMap.create(area, pos, 13);
+    const circle = L.circle(pos, { radius: Number(area.dataset.radius) * 1000, color: '#E8501E', weight: 2, fillColor: '#E8501E', fillOpacity: 0.08 }).addTo(m);
+    L.marker(pos, { icon: VMap.icon('vulc') }).addTo(m);
+    m.fitBounds(circle.getBounds(), { padding: [10, 10] });
+  }
+
+  // Checklist: tick "Sound alerts on" once the browser allows notifications.
+  const alertItem = document.querySelector('[data-check=alerts]');
+  if (alertItem && typeof Alerts !== 'undefined' && Alerts.enabled()) {
+    alertItem.classList.replace('bg-gray-50', 'bg-green-50');
+    const dot = alertItem.querySelector('span');
+    dot.className = 'grid h-6 w-6 shrink-0 place-items-center rounded-full bg-ok-500 text-xs font-bold text-white';
+    dot.textContent = '✓';
+  }
+
   if (dash.dataset.online !== '1') return;
 
   const modal = document.getElementById('offer-modal');

@@ -4,14 +4,21 @@
 require_once __DIR__ . '/nav.php';
 $u = current_user();
 $activeTab = $activeTab ?? 'home';
+$withSidebar = $u['role'] === 'provider';
+if ($withSidebar) {
+    require_once __DIR__ . '/jobs.php';
+    require_once __DIR__ . '/provider_sidebar.php';
+    echo provider_sidebar($u, $activeTab);
+    echo '<div class="lg:pl-64">'; // closed in bottom_nav.php
+}
 ?>
 <header class="hero-curve sticky top-0 z-30 bg-white px-5 pb-4 pt-5 shadow-sm md:static md:rounded-none md:px-8">
-  <div class="mx-auto flex max-w-6xl items-center justify-between gap-4">
+  <div class="mx-auto flex max-w-6xl items-center justify-between gap-4 <?= $withSidebar ? 'lg:min-h-[3rem]' : '' ?>">
     <div class="min-w-0">
       <h1 class="truncate text-xl font-bold"><?= $greeting ?></h1>
       <p class="truncate text-sm font-medium text-brand-500"><?= e($subline ?? '') ?></p>
     </div>
-    <nav class="hidden items-center gap-1 md:flex" aria-label="Main">
+    <nav class="hidden items-center gap-1 md:flex <?= $withSidebar ? 'lg:hidden' : '' ?>" aria-label="Main">
       <?php foreach (nav_items($u) as $key => [$label, $href]): ?>
         <a href="<?= url($href) ?>" <?= $key === $activeTab ? 'aria-current="page"' : '' ?>
            class="flex items-center gap-2 rounded-xl px-3 py-2 text-sm font-semibold transition
@@ -21,7 +28,7 @@ $activeTab = $activeTab ?? 'home';
       <?php endforeach; ?>
     </nav>
     <div class="flex items-center gap-2">
-      <form method="post" action="<?= url('logout.php') ?>" class="hidden md:block">
+      <form method="post" action="<?= url('logout.php') ?>" class="hidden md:block <?= $withSidebar ? 'lg:hidden' : '' ?>">
         <?= csrf_field() ?>
         <button class="whitespace-nowrap rounded-lg px-3 py-2 text-sm font-medium text-gray-500 hover:bg-gray-100">Log out</button>
       </form>
