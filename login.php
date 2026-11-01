@@ -95,10 +95,7 @@ $hasError = (bool) $error;
         </div>
 
         <div>
-          <div class="mb-1.5 flex items-baseline justify-between">
-            <label for="password" class="block text-sm font-medium text-gray-700">Password</label>
-            <a href="<?= url('forgot.php') ?>" class="text-sm font-medium text-gray-500 hover:text-brand-600">Forgot?</a>
-          </div>
+          <label for="password" class="mb-1.5 block text-sm font-medium text-gray-700">Password</label>
           <div class="auth-field">
             <span class="auth-icon" aria-hidden="true">
               <svg viewBox="0 0 24 24" class="h-5 w-5" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="4.5" y="10.5" width="15" height="10" rx="2.5"/><path d="M8 10.5V7.5a4 4 0 0 1 8 0v3"/></svg>
@@ -111,8 +108,14 @@ $hasError = (bool) $error;
               <svg id="eye-closed" viewBox="0 0 24 24" class="hidden h-5 w-5" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 3l18 18M10.6 5.6A9.8 9.8 0 0 1 12 5.5c6 0 9.5 6.5 9.5 6.5a17 17 0 0 1-3 3.8M6.3 6.4C3.9 8 2.5 12 2.5 12S6 18.5 12 18.5a9.6 9.6 0 0 0 4-.9M9.9 9.9a3 3 0 0 0 4.2 4.2"/></svg>
             </button>
           </div>
-          <p id="password-error" class="mt-1.5 hidden text-sm text-red-600"></p>
-          <p id="caps-warning" class="mt-1.5 hidden items-center gap-1.5 text-sm text-amber-600">⇪ Caps Lock is on</p>
+          <!-- Messages on the left, "Forgot password?" on the right, under the field -->
+          <div class="mt-2 flex items-start justify-between gap-3">
+            <div class="min-w-0">
+              <p id="password-error" class="hidden text-sm text-red-600"></p>
+              <p id="caps-warning" class="hidden items-center gap-1.5 text-sm text-amber-600">⇪ Caps Lock is on</p>
+            </div>
+            <a href="<?= url('forgot.php') ?>" class="shrink-0 text-sm font-medium text-gray-500 hover:text-brand-600">Forgot password?</a>
+          </div>
         </div>
 
         <button type="submit" id="login-btn" class="auth-btn group relative flex w-full items-center justify-center gap-2 overflow-hidden rounded-2xl bg-ink-900 py-3.5 font-semibold text-white transition hover:bg-black active:scale-[.99] disabled:cursor-wait">
