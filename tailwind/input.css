@@ -206,3 +206,25 @@ html.js [data-reveal].is-visible { opacity: 1; translate: 0 0; }
 
 /* Leaflet uses z-index up to 1000 inside the map; keep that from covering the sticky header */
 .leaflet-container { isolation: isolate; z-index: 0; }
+
+/* ---------- Auth pages (login, register, forgot) ---------- */
+.auth-dots { background-image: radial-gradient(rgb(255 255 255 / .35) 1px, transparent 1px); background-size: 18px 18px;
+             mask-image: linear-gradient(180deg, #000, transparent 75%); }
+.auth-gecko { animation: auth-float 5s ease-in-out infinite; transform-origin: 50% 100%; }
+@keyframes auth-float { 50% { transform: translateY(-10px) rotate(-1.5deg); } }
+.auth-chip { animation: bob 4.5s ease-in-out infinite; }
+.auth-chip-2 { animation-delay: -2.2s; }
+.auth-wave { animation: gecko-wave 1.4s ease-in-out .3s 2; transform-origin: 50% 100%; }
+
+.auth-field { position: relative; display: flex; align-items: center; border-radius: 1rem; background: #F7F7F8;
+              box-shadow: inset 0 0 0 1px #E5E7EB; transition: box-shadow .2s, background .2s; }
+.auth-field:hover { box-shadow: inset 0 0 0 1px #D1D5DB; }
+.auth-field:focus-within { background: #fff; box-shadow: inset 0 0 0 1.5px #E8501E, 0 0 0 4px #FFE1D4; }
+.auth-field.is-invalid { box-shadow: inset 0 0 0 1.5px #DC2626, 0 0 0 4px #FEE2E2; background: #fff; }
+.auth-icon { position: absolute; left: 0; display: grid; place-items: center; width: 3rem; height: 100%; color: #9CA3AF; transition: color .2s; pointer-events: none; }
+.auth-field:focus-within .auth-icon { color: #E8501E; }
+.auth-input { width: 100%; background: transparent; border: 0; outline: none; padding: .95rem 1rem .95rem 3rem; font-size: 1rem; color: #111827; border-radius: 1rem; }
+.auth-input::placeholder { color: #9CA3AF; }
+
+.shake { animation: shake .45s cubic-bezier(.36,.07,.19,.97); }
+@keyframes shake { 10%, 90% { transform: translateX(-1px); } 20%, 80% { transform: translateX(3px); } 30%, 50%, 70% { transform: translateX(-6px); } 40%, 60% { transform: translateX(6px); } }

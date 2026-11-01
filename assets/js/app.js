@@ -24,7 +24,8 @@ document.querySelectorAll('form[data-once]').forEach((form) => {
 document.querySelectorAll('form input').forEach((input) => {
   input.addEventListener('input', () => {
     const wrapper = input.closest('div:has(> p.text-red-600), fieldset');
-    wrapper?.querySelectorAll(':scope > p.text-red-600').forEach((p) => p.remove());
+    // Only messages printed by the server; live error boxes (with an id) are managed by their page.
+    wrapper?.querySelectorAll(':scope > p.text-red-600:not([id])').forEach((p) => p.remove());
   });
 });
 
